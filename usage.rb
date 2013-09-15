@@ -4,7 +4,9 @@ require 'eventmachine'
 require 'em-zwave'
 
 EM.run do
-  @zwave = EM::Zwave.new '/dev/ttyUSB0'
+  @zwave = EM::Zwave.new
+  @zwave.add_device('/dev/ttyUSB0')
+
   @zwave.on_notification do |notification|
     puts "Notification in user code: #{notification}"
   end

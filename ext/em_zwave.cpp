@@ -45,42 +45,160 @@ notification_t* g_notification_queue_pop() {
 }
 
 extern "C"
-void* worker_thread(void* unused) {
-    int i;
-    for(i = 0; i < 500; i++) {
-        usleep(20000);
-        // printf("C-p: pushing notification %i\n", i);
+void zwave_on_notification(Notification const* _notification, void* _context) {
+    printf("C: notification received\n");
 
-        notification_t* notification = (notification_t*)malloc(sizeof(notification_t));
-        notification->number = i;
+    pthread_mutex_lock( &g_zwave_notification_mutex );
 
-        // push the notification into the notification queue
-        pthread_mutex_lock(&g_notification_mutex);
-        g_notification_queue_push(notification);
-        pthread_mutex_unlock(&g_notification_mutex);
-
-        // signal waiting ruby thread, that a notification was pushed
-        pthread_cond_signal(&g_notification_cond);
+    switch(_notification->GetType()) {
+    case Notification::Type_ValueAdded:
+        {
+            break;
+        }
+    case Notification::Type_ValueRemoved:
+        {
+            break;
+        }
+    case Notification::Type_ValueChanged:
+        {
+            break;
+        }
+    case Notification::Type_Group:
+        {
+            break;
+        }
+    case Notification::Type_NodeAdded:
+        {
+            break;
+        }
+    case Notification::Type_NodeRemoved:
+        {
+            break;
+        }
+    case Notification::Type_NodeEvent:
+        {
+            break;
+        }
+    case Notification::Type_PollingDisabled:
+        {
+            break;
+        }
+    case Notification::Type_PollingEnabled:
+        {
+            break;
+        }
+    case Notification::Type_DriverReady:
+        {
+            g_zwave_home_id = _notification->GetHomeId();
+            break;
+        }
+    case Notification::Type_DriverFailed:
+        {
+            g_zwave_init_failed = true;
+            pthread_cond_broadcast(&g_zwave_init_cond);
+            break;
+        }
+    case Notification::Type_AwakeNodesQueried:
+    case Notification::Type_AllNodesQueried:
+    case Notification::Type_AllNodesQueriedSomeDead:
+        {
+            pthread_cond_broadcast(&g_zwave_init_cond);
+            break;
+        }
+    case Notification::Type_DriverReset:
+    case Notification::Type_Notification:
+    case Notification::Type_NodeNaming:
+    case Notification::Type_NodeProtocolInfo:
+    case Notification::Type_NodeQueriesComplete:
+    default:
+        {
+        }
     }
+
+    pthread_mutex_unlock(&g_zwave_notification_mutex);
 }
 
-
 extern "C"
-VALUE start_worker(void*) {
-    pthread_t worker;
-    pthread_create(&worker, 0, &worker_thread, NULL);
-    pthread_join(worker, NULL);
+VALUE start_openzwave(void* data) {
+    zwave_init_data_t* zwave_data = (zwave_init_data_t*)data;
+
+    pthread_mutexattr_t mutexattr;
+    pthread_mutexattr_init(&mutexattr);
+    pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&g_zwave_notification_mutex, &mutexattr);
+    pthread_mutexattr_destroy(&mutexattr);
+
+    pthread_mutex_lock(&g_zwave_init_mutex);
+
+    // VALUE value = rb_ivar_get(self, rb_intern("@device"));
+    // char * c_str = StringValuePtr(value);
+    std::string config_path = zwave_data->config_path;
+    Options::Create(config_path, "", "");
+    Options::Get()->AddOptionBool("PerformReturnRoutes", false);
+    Options::Get()->AddOptionBool("ConsoleOutput", false);
+    Options::Get()->Lock();
+    Manager::Create();
+
+    Manager::Get()->AddWatcher(zwave_on_notification, NULL);
+
+    for(int i = 0; i < zwave_data->devices_length; i++)
+    {
+        Manager::Get()->AddDriver(zwave_data->devices[i]);
+    }
+
+    pthread_cond_wait(&g_zwave_init_cond, &g_zwave_init_mutex);
+
+    if(!g_zwave_init_failed) {
+        Manager::Get()->WriteConfig(g_zwave_home_id);
+
+        Driver::DriverData data;
+        Manager::Get()->GetDriverStatistics(g_zwave_home_id, &data);
+        printf("SOF: %d ACK Waiting: %d Read Aborts: %d Bad Checksums: %d\n", data.m_SOFCnt, data.m_ACKWaiting, data.m_readAborts, data.m_badChecksum);
+        printf("Reads: %d Writes: %d CAN: %d NAK: %d ACK: %d Out of Frame: %d\n", data.m_readCnt, data.m_writeCnt, data.m_CANCnt, data.m_NAKCnt, data.m_ACKCnt, data.m_OOFCnt);
+        printf("Dropped: %d Retries: %d\n", data.m_dropped, data.m_retries);
+
+        g_zwave_init_done = true;
+        pthread_mutex_unlock(&g_zwave_init_mutex);
+
+        pthread_mutex_lock(&g_zwave_running_mutex);
+        while (g_zwave_keep_running) {
+            pthread_cond_wait(&g_zwave_running_cond, &g_zwave_running_mutex);
+        }
+        pthread_mutex_unlock(&g_zwave_running_mutex);
+    } else {
+        printf("C: Unable to initialize OpenZwave\n");
+        pthread_mutex_unlock(&g_zwave_init_mutex);
+    }
+    Manager::Destroy();
+    pthread_mutex_destroy(&g_zwave_notification_mutex);
+
     return Qnil;
 }
 
+
+
 extern "C"
-void stop_worker(void*) {
-    // shutdown the zwave manager correctly
+void stop_openzwave(void*) {
+    /* If the openzwave init is stopped  prematurely,
+     * then this init should be seen as failed. */
+    pthread_mutex_lock(&g_zwave_init_mutex);
+    if(!g_zwave_init_done)
+    {
+        g_zwave_init_failed = true;
+        pthread_cond_broadcast(&g_zwave_init_cond);
+    }
+    pthread_mutex_unlock(&g_zwave_init_mutex);
+
+    /* Finally */
+    pthread_mutex_lock(&g_zwave_running_mutex);
+    g_zwave_keep_running = false;
+    pthread_cond_signal(&g_zwave_running_cond);
+    pthread_mutex_unlock(&g_zwave_running_mutex);
 }
 
 extern "C"
-VALUE em_zwave_worker_thread(void* unused) {
-    rb_thread_blocking_region(start_worker, NULL, stop_worker, NULL);
+VALUE em_zwave_openzwave_thread(void* zwave_data) {
+    rb_thread_blocking_region(start_openzwave, zwave_data, stop_openzwave, NULL);
     return Qnil;
 }
 
@@ -118,6 +236,7 @@ VALUE em_zwave_event_thread(void* args) {
         rb_thread_blocking_region(wait_for_notification, &waiting,
                                   stop_waiting_for_notification, &waiting);
 
+        /*  */
         VALUE notification = rb_obj_alloc(rb_cNotification);
         VALUE init_argv[1];
         init_argv[0] = INT2NUM(waiting.notification->number);
@@ -129,10 +248,22 @@ VALUE em_zwave_event_thread(void* args) {
     return Qnil;
 }
 
-// starts the open zwave thread
 extern "C"
 VALUE rb_zwave_initialize_zwave(VALUE self) {
-    rb_thread_create((VALUE (*)(...))em_zwave_worker_thread, NULL);
+    VALUE rb_config_path = rb_iv_get(self, "@config_path");
+    zwave_init_data_t* zwave_data = (zwave_init_data_t*)malloc(sizeof(zwave_init_data_t));
+    zwave_data->config_path = StringValuePtr(rb_config_path);
+
+    VALUE rb_devices = rb_iv_get(self, "@devices");
+    zwave_data->devices_length = RARRAY_LEN(rb_devices);
+    zwave_data->devices = (char**)malloc(zwave_data->devices_length * sizeof(char*));
+    for(int i = 0; i < zwave_data->devices_length; i++)
+    {
+        VALUE rb_device_str = rb_ary_entry(rb_devices, (long)i);
+        zwave_data->devices[0] = StringValuePtr(rb_device_str);
+    }
+
+    rb_thread_create((VALUE (*)(...))em_zwave_openzwave_thread, (void*)zwave_data);
     rb_thread_create((VALUE (*)(...))em_zwave_event_thread, (void*)self);
     return Qnil;
 }
