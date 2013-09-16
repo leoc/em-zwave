@@ -15,12 +15,8 @@ struct notification_t {
     notification_t* next;
 };
 
-typedef struct waiting_notification_t waiting_notification_t;
-struct waiting_notification_t {
-    notification_t* notification;
-    bool abort;
-};
-
+/* Used to pack configuration data from the ruby class and pass it the */
+/* open zwave initialization function */
 typedef struct zwave_init_data_t zwave_init_data_t;
 struct zwave_init_data_t {
     char* config_path;
@@ -29,6 +25,7 @@ struct zwave_init_data_t {
 };
 
 static ID id_push_notification;
+static ID id_schedule_shutdown;
 static VALUE rb_mEm;
 static VALUE rb_cZwave;
 static VALUE rb_cNotification;
@@ -45,9 +42,15 @@ static pthread_mutex_t g_zwave_notification_mutex;
 
 /* When the driver is ready, those control how long the OpenZwave
  * driver should be running. */
-static bool   g_zwave_keep_running = true;
+static bool            g_zwave_keep_running = true;
 static pthread_cond_t  g_zwave_running_cond  = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t g_zwave_running_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+static bool            g_zwave_manager_stopped = false;
+static pthread_cond_t  g_zwave_shutdown_cond  = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t g_zwave_shutdown_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+static bool            g_zwave_event_thread_keep_running = true;
 
 /* Those control the access of the notification queue to schedule the
  * openzwave producer and the ruby consumer. */
@@ -55,4 +58,5 @@ static pthread_cond_t  g_notification_cond  = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t g_notification_mutex = PTHREAD_MUTEX_INITIALIZER;
 static notification_t* g_notification_queue = NULL;
 
+static int g_notification_overall = 0;
 #endif

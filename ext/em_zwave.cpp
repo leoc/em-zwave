@@ -144,21 +144,36 @@ VALUE start_openzwave(void* data) {
         }
         pthread_mutex_unlock(&g_zwave_running_mutex);
     } else {
-        printf("C: Unable to initialize OpenZwave\n");
+        printf("Unable to initialize OpenZwave driver!\n");
         pthread_mutex_unlock(&g_zwave_init_mutex);
     }
     Manager::Destroy();
-    pthread_mutex_destroy(&g_zwave_notification_mutex);
+
+    // TODO: clean up
+
+    /* Tell the event thread, that the manager was stopped */
+    pthread_mutex_lock(&g_zwave_shutdown_mutex);
+    g_zwave_manager_stopped = true;
+    pthread_cond_signal(&g_zwave_shutdown_cond);
+    pthread_mutex_unlock(&g_zwave_shutdown_mutex);
 
     return Qnil;
 }
 
-
+extern "C" void stop_openzwave(void*) {}
 
 extern "C"
-void stop_openzwave(void*) {
-    /* If the openzwave init is stopped  prematurely,
-     * then this init should be seen as failed. */
+VALUE em_zwave_openzwave_thread(void* zwave_data)
+{
+    rb_thread_blocking_region(start_openzwave, zwave_data, stop_openzwave, NULL);
+    return Qnil;
+}
+
+extern "C"
+VALUE em_zwave_shutdown_no_gvl(void*)
+{
+    /* If the openzwave initialization is stopped prematurely, */
+    /* then this initialization should be seen as failed. */
     pthread_mutex_lock(&g_zwave_init_mutex);
     if(!g_zwave_init_done)
     {
@@ -167,69 +182,134 @@ void stop_openzwave(void*) {
     }
     pthread_mutex_unlock(&g_zwave_init_mutex);
 
-    /* Finally */
+    /* Finally we can stop the manager.  */
     pthread_mutex_lock(&g_zwave_running_mutex);
     g_zwave_keep_running = false;
-    pthread_cond_signal(&g_zwave_running_cond);
+    pthread_cond_broadcast(&g_zwave_running_cond);
     pthread_mutex_unlock(&g_zwave_running_mutex);
+
+    /* Wait for the OpenZWave manager to shutdown. */
+    pthread_mutex_lock(&g_zwave_shutdown_mutex);
+    while(!g_zwave_manager_stopped)
+    {
+        pthread_cond_wait(&g_zwave_shutdown_cond, &g_zwave_shutdown_mutex);
+    }
+    pthread_mutex_unlock(&g_zwave_shutdown_mutex);
+
+    /* Tell the event thread, that we want to stop as soon as there */
+    /* are no more notifications in the queue! */
+    pthread_mutex_lock(&g_notification_mutex);
+    g_zwave_event_thread_keep_running = false;
+    pthread_mutex_unlock(&g_notification_mutex);
+    pthread_cond_broadcast(&g_notification_cond);
 }
 
+extern "C" void em_zwave_stop_shutdown(void*) {}
+
 extern "C"
-VALUE em_zwave_openzwave_thread(void* zwave_data) {
-    rb_thread_blocking_region(start_openzwave, zwave_data, stop_openzwave, NULL);
+VALUE rb_zwave_shutdown_thread(void*)
+{
+    rb_thread_blocking_region(em_zwave_shutdown_no_gvl, NULL,
+                              em_zwave_stop_shutdown, NULL);
     return Qnil;
 }
 
 extern "C"
-VALUE wait_for_notification(void* w) {
-    waiting_notification_t* waiting = (waiting_notification_t*)w;
+VALUE rb_zwave_shutdown(VALUE self)
+{
+    rb_thread_create((VALUE (*)(...))rb_zwave_shutdown_thread, (void*)self);
+    return Qnil;
+}
+
+extern "C"
+VALUE wait_for_notification(void* n) {
+    notification_t** notification = (notification_t**)n;
+
     pthread_mutex_lock(&g_notification_mutex);
-    while (waiting->abort == false && (waiting->notification = g_notification_queue_pop()) == NULL) {
+    while (g_zwave_event_thread_keep_running & (*notification = g_notification_queue_pop()) == NULL)
+    {
         pthread_cond_wait(&g_notification_cond, &g_notification_mutex);
     }
+
     pthread_mutex_unlock(&g_notification_mutex);
     return Qnil;
 }
 
+extern "C" void stop_waiting_for_notification(void* w) {}
+
 extern "C"
-void stop_waiting_for_notification(void* w) {
-    waiting_notification_t* waiting = (waiting_notification_t*)w;
-    pthread_mutex_lock(&g_notification_mutex);
-    waiting->abort = true;
-    pthread_cond_signal(&g_notification_cond);
-    pthread_mutex_unlock(&g_notification_mutex);
+VALUE em_zwave_get_notification_type_symbol(int type) {
+    switch(type)
+    {
+    case Notification::Type_ValueAdded: return ID2SYM(rb_intern("value_added:"));
+    case Notification::Type_ValueRemoved: return ID2SYM(rb_intern("value_removed"));
+    case Notification::Type_ValueChanged: return ID2SYM(rb_intern("value_changed"));
+    case Notification::Type_Group: return ID2SYM(rb_intern("group"));
+    case Notification::Type_NodeAdded: return ID2SYM(rb_intern("node_added"));
+    case Notification::Type_NodeRemoved: return ID2SYM(rb_intern("node_removed"));
+    case Notification::Type_NodeEvent: return ID2SYM(rb_intern("node_event"));
+    case Notification::Type_PollingDisabled: return ID2SYM(rb_intern("polling_disabled"));
+    case Notification::Type_PollingEnabled: return ID2SYM(rb_intern("polling_enabled"));
+    case Notification::Type_DriverReady: return ID2SYM(rb_intern("driver_ready"));
+    case Notification::Type_DriverFailed: return ID2SYM(rb_intern("driver_failed"));
+    case Notification::Type_AwakeNodesQueried: return ID2SYM(rb_intern("awake_nodes_queried"));
+    case Notification::Type_AllNodesQueried: return ID2SYM(rb_intern("all_nodes_queried"));
+    case Notification::Type_AllNodesQueriedSomeDead: return ID2SYM(rb_intern("all_nodes_queried_some_dead"));
+    case Notification::Type_DriverReset: return ID2SYM(rb_intern("driver_reset"));
+    case Notification::Type_Notification: return ID2SYM(rb_intern("notification"));
+    case Notification::Type_NodeNaming: return ID2SYM(rb_intern("node_naming"));
+    case Notification::Type_NodeProtocolInfo: return ID2SYM(rb_intern("node_protocol_info"));
+    case Notification::Type_NodeQueriesComplete: return ID2SYM(rb_intern("node_queries_complete"));
+    default: return INT2FIX(type);
+    }
 }
 
 /* This thread loops continuously, waiting for callbacks happening in the C thread. */
 extern "C"
-VALUE em_zwave_event_thread(void* args) {
+VALUE em_zwave_event_thread(void* args)
+{
     VALUE zwave = (VALUE)args;
 
-    waiting_notification_t waiting = {
-        .notification = NULL,
-        .abort = false
-    };
+    notification_t* waiting_notification = NULL;
 
-    while(waiting.abort == false) {
-        rb_thread_blocking_region(wait_for_notification, &waiting,
-                                  stop_waiting_for_notification, &waiting);
+    while(g_zwave_event_thread_keep_running || g_notification_count() > 0)
+    {
+        rb_thread_blocking_region(wait_for_notification, &waiting_notification,
+                                  stop_waiting_for_notification, NULL);
 
-        /*  */
-        VALUE notification = rb_obj_alloc(rb_cNotification);
-        VALUE init_argv[1];
-        init_argv[0] = INT2NUM(waiting.notification->number);
-        rb_obj_call_init(notification, 1, init_argv);
+        if(waiting_notification != NULL)
+        {
+            g_notification_overall++;
 
-        rb_funcall(zwave, id_push_notification, 1, notification);
+            VALUE notification = rb_obj_alloc(rb_cNotification);
+            VALUE notification_options = rb_hash_new();
+
+            rb_hash_aset(notification_options, ID2SYM(rb_intern("type")), em_zwave_get_notification_type_symbol(waiting_notification->type));
+            rb_hash_aset(notification_options, ID2SYM(rb_intern("home_id")), INT2FIX(waiting_notification->home_id));
+            rb_hash_aset(notification_options, ID2SYM(rb_intern("node_id")), INT2FIX(waiting_notification->node_id));
+
+            VALUE init_argv[1];
+            init_argv[0] = notification_options;
+            rb_obj_call_init(notification, 1, init_argv);
+
+            rb_funcall(zwave, id_push_notification, 1, notification);
+        }
+
+        waiting_notification = NULL;
     }
+
+    // TODO: clean up all allocated resources
+
+    rb_funcall(zwave, id_schedule_shutdown, 0, NULL);
 
     return Qnil;
 }
 
 extern "C"
 VALUE rb_zwave_initialize_zwave(VALUE self) {
-    VALUE rb_config_path = rb_iv_get(self, "@config_path");
     zwave_init_data_t* zwave_data = (zwave_init_data_t*)malloc(sizeof(zwave_init_data_t));
+
+    VALUE rb_config_path = rb_iv_get(self, "@config_path");
     zwave_data->config_path = StringValuePtr(rb_config_path);
 
     VALUE rb_devices = rb_iv_get(self, "@devices");
@@ -249,11 +329,13 @@ VALUE rb_zwave_initialize_zwave(VALUE self) {
 extern "C"
 void Init_emzwave() {
     id_push_notification = rb_intern("push_notification");
+    id_schedule_shutdown = rb_intern("schedule_shutdown");
 
     rb_mEm = rb_define_module("EventMachine");
 
     rb_cZwave = rb_define_class_under(rb_mEm, "Zwave", rb_cObject);
     rb_define_method(rb_cZwave, "initialize_zwave", (VALUE (*)(...))rb_zwave_initialize_zwave, 0);
+    rb_define_method(rb_cZwave, "shutdown", (VALUE (*)(...))rb_zwave_shutdown, 0);
 
     rb_cNotification = rb_define_class_under(rb_cZwave, "Notification", rb_cObject);
 }
