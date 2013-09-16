@@ -63,73 +63,34 @@ int g_notification_count()
 
 extern "C"
 void zwave_on_notification(Notification const* _notification, void* _context) {
-    printf("C: notification received\n");
+    pthread_mutex_lock(&g_zwave_notification_mutex);
 
-    pthread_mutex_lock( &g_zwave_notification_mutex );
+    notification_t* notification = (notification_t*)malloc(sizeof(notification_t));
+
+    notification->type    = _notification->GetType();
+    notification->home_id = _notification->GetHomeId();
+    notification->node_id = _notification->GetNodeId();
+
+    pthread_mutex_lock(&g_notification_mutex);
+    g_notification_queue_push(notification);
+    pthread_cond_broadcast(&g_notification_cond);
+    pthread_mutex_unlock(&g_notification_mutex);
 
     switch(_notification->GetType()) {
-    case Notification::Type_ValueAdded:
-        {
-            break;
-        }
-    case Notification::Type_ValueRemoved:
-        {
-            break;
-        }
-    case Notification::Type_ValueChanged:
-        {
-            break;
-        }
-    case Notification::Type_Group:
-        {
-            break;
-        }
-    case Notification::Type_NodeAdded:
-        {
-            break;
-        }
-    case Notification::Type_NodeRemoved:
-        {
-            break;
-        }
-    case Notification::Type_NodeEvent:
-        {
-            break;
-        }
-    case Notification::Type_PollingDisabled:
-        {
-            break;
-        }
-    case Notification::Type_PollingEnabled:
-        {
-            break;
-        }
     case Notification::Type_DriverReady:
-        {
-            g_zwave_home_id = _notification->GetHomeId();
-            break;
-        }
+        g_zwave_home_id = _notification->GetHomeId();
+        break;
+
     case Notification::Type_DriverFailed:
-        {
-            g_zwave_init_failed = true;
-            pthread_cond_broadcast(&g_zwave_init_cond);
-            break;
-        }
+        g_zwave_init_failed = true;
+        pthread_cond_broadcast(&g_zwave_init_cond);
+        break;
+
     case Notification::Type_AwakeNodesQueried:
     case Notification::Type_AllNodesQueried:
     case Notification::Type_AllNodesQueriedSomeDead:
-        {
-            pthread_cond_broadcast(&g_zwave_init_cond);
-            break;
-        }
-    case Notification::Type_DriverReset:
-    case Notification::Type_Notification:
-    case Notification::Type_NodeNaming:
-    case Notification::Type_NodeProtocolInfo:
-    case Notification::Type_NodeQueriesComplete:
-    default:
-        {
-        }
+        pthread_cond_broadcast(&g_zwave_init_cond);
+        break;
     }
 
     pthread_mutex_unlock(&g_zwave_notification_mutex);
