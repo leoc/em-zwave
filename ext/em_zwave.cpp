@@ -241,25 +241,33 @@ extern "C"
 VALUE em_zwave_get_notification_type_symbol(int type) {
     switch(type)
     {
-    case Notification::Type_ValueAdded: return ID2SYM(rb_intern("value_added:"));
+    case Notification::Type_ValueAdded: return ID2SYM(rb_intern("value_added"));
     case Notification::Type_ValueRemoved: return ID2SYM(rb_intern("value_removed"));
     case Notification::Type_ValueChanged: return ID2SYM(rb_intern("value_changed"));
+    case Notification::Type_ValueRefreshed: return ID2SYM(rb_intern("value_refreshed"));
     case Notification::Type_Group: return ID2SYM(rb_intern("group"));
+    case Notification::Type_NodeNew: return ID2SYM(rb_intern("node_new"));
     case Notification::Type_NodeAdded: return ID2SYM(rb_intern("node_added"));
     case Notification::Type_NodeRemoved: return ID2SYM(rb_intern("node_removed"));
+    case Notification::Type_NodeProtocolInfo: return ID2SYM(rb_intern("node_protocol_info"));
+    case Notification::Type_NodeNaming: return ID2SYM(rb_intern("node_naming"));
     case Notification::Type_NodeEvent: return ID2SYM(rb_intern("node_event"));
     case Notification::Type_PollingDisabled: return ID2SYM(rb_intern("polling_disabled"));
     case Notification::Type_PollingEnabled: return ID2SYM(rb_intern("polling_enabled"));
+    case Notification::Type_SceneEvent: return ID2SYM(rb_intern("scene_event"));
+    case Notification::Type_CreateButton: return ID2SYM(rb_intern("create_button"));
+    case Notification::Type_DeleteButton: return ID2SYM(rb_intern("delete_button"));
+    case Notification::Type_ButtonOn: return ID2SYM(rb_intern("button_on"));
+    case Notification::Type_ButtonOff: return ID2SYM(rb_intern("button_off"));
     case Notification::Type_DriverReady: return ID2SYM(rb_intern("driver_ready"));
     case Notification::Type_DriverFailed: return ID2SYM(rb_intern("driver_failed"));
-    case Notification::Type_AwakeNodesQueried: return ID2SYM(rb_intern("awake_nodes_queried"));
-    case Notification::Type_AllNodesQueried: return ID2SYM(rb_intern("all_nodes_queried"));
-    case Notification::Type_AllNodesQueriedSomeDead: return ID2SYM(rb_intern("all_nodes_queried_some_dead"));
     case Notification::Type_DriverReset: return ID2SYM(rb_intern("driver_reset"));
-    case Notification::Type_Notification: return ID2SYM(rb_intern("notification"));
-    case Notification::Type_NodeNaming: return ID2SYM(rb_intern("node_naming"));
-    case Notification::Type_NodeProtocolInfo: return ID2SYM(rb_intern("node_protocol_info"));
+    case Notification::Type_EssentialNodeQueriesComplete: return ID2SYM(rb_intern("essential_node_queries_complete"));
     case Notification::Type_NodeQueriesComplete: return ID2SYM(rb_intern("node_queries_complete"));
+    case Notification::Type_AwakeNodesQueried: return ID2SYM(rb_intern("awake_nodes_queried"));
+    case Notification::Type_AllNodesQueriedSomeDead: return ID2SYM(rb_intern("all_nodes_queried_some_dead"));
+    case Notification::Type_AllNodesQueried: return ID2SYM(rb_intern("all_nodes_queried"));
+    case Notification::Type_Notification: return ID2SYM(rb_intern("notification"));
     default: return INT2FIX(type);
     }
 }
