@@ -45,6 +45,23 @@ notification_t* g_notification_queue_pop() {
 }
 
 extern "C"
+int g_notification_count()
+{
+    int count = 0;
+
+    pthread_mutex_lock(&g_notification_mutex);
+    notification_t* current = g_notification_queue;
+    while(current != NULL)
+    {
+        count++;
+        current = current->next;
+    }
+    pthread_mutex_unlock(&g_notification_mutex);
+
+    return count;
+}
+
+extern "C"
 void zwave_on_notification(Notification const* _notification, void* _context) {
     printf("C: notification received\n");
 
