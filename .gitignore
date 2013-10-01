@@ -1,4 +1,7 @@
-/Makefile
-/em_zwave.o
-/emzwave.so
-/ext/Makefile
+Makefile
+em_zwave.o
+emzwave.so
+OZW_Log.txt
+mkmf.log
+zwcfg_*.xml
+zwscene.xml
