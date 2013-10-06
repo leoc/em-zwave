@@ -1,6 +1,14 @@
 #ifndef EM_ZWAVE_H
 #define EM_ZWAVE_H
 
+#include <stdlib.h>
+
+
+#include <openzwave/value_classes/ValueID.h>
+
+using namespace std;
+using namespace OpenZWave;
+
 typedef struct notification_t notification_t;
 struct notification_t {
     int    type;
@@ -14,6 +22,16 @@ struct notification_t {
     uint8  notification;
     notification_t* next;
 };
+
+typedef struct node_info_t node_info_t;
+struct node_info_t {
+    uint32        home_id;
+    uint8         node_id;
+    bool          polling;
+    list<ValueID> values;
+};
+
+static list<node_info_t*> g_nodes;
 
 /* Used to pack configuration data from the ruby class and pass it the */
 /* open zwave initialization function */
