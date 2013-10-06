@@ -7,10 +7,12 @@ module EventMachine
         @node_id = node_id
       end
 
-      def request_info; end
-      def request_dynamic; end
+      def values
+        @values ||= []
+      end
 
-      def state; end
+      # Stubs for documentations purpose
+      #  - The following methods are defined in the C code of this library.
       def listening_device?; end
       def frequent_listening_device?; end
       def beaming_device?; end
@@ -34,11 +36,9 @@ module EventMachine
       def name; end
       def location; end
 
-      def values; end
-
       def on!; end
       def off!; end
-      def level; end
+      def level=; end
 
     end
   end
