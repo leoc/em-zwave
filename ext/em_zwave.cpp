@@ -325,6 +325,8 @@ VALUE em_zwave_shutdown_no_gvl(void*)
     g_zwave_event_thread_keep_running = false;
     pthread_mutex_unlock(&g_notification_mutex);
     pthread_cond_broadcast(&g_notification_cond);
+
+    return Qnil;
 }
 
 extern "C" void em_zwave_stop_shutdown(void*) {}
