@@ -28,18 +28,8 @@ module EventMachine
       def set?; end
       def polled?; end
 
-      def list_selection; end
-      def list_items; end
-      def float_precision; end
-
       def set(level); end
       def get; end
-
-      def refresh!; end
-      def change_verified?; end
-      def change_verified=; end
-      def press_button; end
-      def release_button; end
 
       def inspect
         ret = "Value[label=#{label},value=#{get},min=#{min},max=#{max}"
