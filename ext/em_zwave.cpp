@@ -571,6 +571,15 @@ VALUE rb_node_get_version(VALUE self)
 }
 
 extern "C"
+VALUE rb_node_get_security(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
+    uint8 security = Manager::Get()->GetNodeSecurity(home_id, node_id);
+    return INT2FIX(security);
+}
+
+extern "C"
 VALUE rb_node_on(VALUE self)
 {
     uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
@@ -972,6 +981,7 @@ void Init_emzwave() {
     rb_define_method(rb_cNode, "security_device?", (VALUE (*)(...))rb_node_is_security_device, 0);
     rb_define_method(rb_cNode, "max_baud_rate", (VALUE (*)(...))rb_node_get_max_baud_rate, 0);
     rb_define_method(rb_cNode, "version", (VALUE (*)(...))rb_node_get_version, 0);
+    rb_define_method(rb_cNode, "security", (VALUE (*)(...))rb_node_get_security, 0);
     //rb_define_method(rb_cZwave, "values", (VALUE (*)(...))rb_node_values, 0);
 
     rb_cValue = rb_define_class_under(rb_cZwave, "Value", rb_cObject);
