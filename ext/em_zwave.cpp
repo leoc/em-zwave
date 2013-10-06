@@ -499,15 +499,6 @@ VALUE rb_zwave_initialize_zwave(VALUE self) {
 }
 
 extern "C"
-VALUE rb_node_type(VALUE self)
-{
-    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
-    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
-    string type = Manager::Get()->GetNodeType(home_id, node_id);
-    return rb_str_new2(type.c_str());
-}
-
-extern "C"
 VALUE rb_node_is_listening_device(VALUE self)
 {
     uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
@@ -577,6 +568,42 @@ VALUE rb_node_get_security(VALUE self)
     uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
     uint8 security = Manager::Get()->GetNodeSecurity(home_id, node_id);
     return INT2FIX(security);
+}
+
+extern "C"
+VALUE rb_node_get_basic_type(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
+    uint8 basic_type = Manager::Get()->GetNodeBasic(home_id, node_id);
+    return INT2FIX(basic_type);
+}
+
+extern "C"
+VALUE rb_node_get_generic_type(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
+    uint8 generic_type = Manager::Get()->GetNodeGeneric(home_id, node_id);
+    return INT2FIX(generic_type);
+}
+
+extern "C"
+VALUE rb_node_get_specific_type(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
+    uint8 specific_type = Manager::Get()->GetNodeSpecific(home_id, node_id);
+    return INT2FIX(specific_type);
+}
+
+extern "C"
+VALUE rb_node_type(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
+    string type = Manager::Get()->GetNodeType(home_id, node_id);
+    return rb_str_new2(type.c_str());
 }
 
 extern "C"
@@ -982,6 +1009,9 @@ void Init_emzwave() {
     rb_define_method(rb_cNode, "max_baud_rate", (VALUE (*)(...))rb_node_get_max_baud_rate, 0);
     rb_define_method(rb_cNode, "version", (VALUE (*)(...))rb_node_get_version, 0);
     rb_define_method(rb_cNode, "security", (VALUE (*)(...))rb_node_get_security, 0);
+    rb_define_method(rb_cNode, "basic_type", (VALUE (*)(...))rb_node_get_basic_type, 0);
+    rb_define_method(rb_cNode, "generic_type", (VALUE (*)(...))rb_node_get_generic_type, 0);
+    rb_define_method(rb_cNode, "specific_type", (VALUE (*)(...))rb_node_get_specific_type, 0);
     //rb_define_method(rb_cZwave, "values", (VALUE (*)(...))rb_node_values, 0);
 
     rb_cValue = rb_define_class_under(rb_cZwave, "Value", rb_cObject);
