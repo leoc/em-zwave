@@ -30,55 +30,6 @@ using namespace std;
 using namespace OpenZWave;
 
 extern "C"
-void g_notification_queue_push(notification_t* notification) {
-    notification->next = g_notification_queue;
-    g_notification_queue = notification;
-}
-
-extern "C"
-notification_t* g_notification_queue_pop() {
-    notification_t* notification = g_notification_queue;
-    if (notification) {
-        g_notification_queue = notification->next;
-    }
-    return notification;
-}
-
-extern "C"
-int g_notification_count()
-{
-    int count = 0;
-
-    pthread_mutex_lock(&g_notification_mutex);
-    notification_t* current = g_notification_queue;
-    while(current != NULL)
-    {
-        count++;
-        current = current->next;
-    }
-    pthread_mutex_unlock(&g_notification_mutex);
-
-    return count;
-}
-
-extern "C"
-node_info_t* g_get_node_info(Notification const* _notification)
-{
-    uint32 const home_id = _notification->GetHomeId();
-    uint8 const node_id = _notification->GetNodeId();
-    for(list<node_info_t*>::iterator it = g_nodes.begin(); it != g_nodes.end(); ++it)
-    {
-        node_info_t* node_info = *it;
-        if((node_info->home_id == home_id) && (node_info->node_id == node_id))
-        {
-            return node_info;
-        }
-    }
-
-    return NULL;
-}
-
-extern "C"
 void zwave_send_notification(Notification const* _notification) {
     notification_t* notification = (notification_t*)malloc(sizeof(notification_t));
 
@@ -105,7 +56,7 @@ void zwave_send_notification(Notification const* _notification) {
         notification->notification = _notification->GetNotification();
 
     pthread_mutex_lock(&g_notification_mutex);
-    g_notification_queue_push(notification);
+    g_notification_queue.push(notification);
     pthread_cond_broadcast(&g_notification_cond);
     pthread_mutex_unlock(&g_notification_mutex);
 }
@@ -117,7 +68,7 @@ void zwave_on_notification(Notification const* _notification, void* _context) {
     switch(_notification->GetType()) {
     case Notification::Type_ValueAdded: break;
     case Notification::Type_ValueRemoved: break;
-    case Notification::Type_ValueChanged:  break;
+    case Notification::Type_ValueChanged: break;
     case Notification::Type_ValueRefreshed: break;
     case Notification::Type_Group: break;
     case Notification::Type_NodeNew: break;
@@ -307,20 +258,17 @@ VALUE rb_zwave_all_off(VALUE self)
 }
 
 extern "C"
-VALUE wait_for_notification(void* n) {
-    notification_t** notification = (notification_t**)n;
-
+VALUE wait_for_notification(void*) {
     pthread_mutex_lock(&g_notification_mutex);
-    while (g_zwave_event_thread_keep_running & (*notification = g_notification_queue_pop()) == NULL)
-    {
+    while (g_zwave_event_thread_keep_running & g_notification_queue.empty()) {
         pthread_cond_wait(&g_notification_cond, &g_notification_mutex);
     }
-
     pthread_mutex_unlock(&g_notification_mutex);
+
     return Qnil;
 }
 
-extern "C" void stop_waiting_for_notification(void* w) {}
+extern "C" void stop_waiting_for_notification(void*) {}
 
 extern "C"
 VALUE em_zwave_get_notification_type_symbol(int type) {
@@ -365,10 +313,15 @@ VALUE em_zwave_event_thread(void* args)
 
     notification_t* waiting_notification = NULL;
 
-    while(g_zwave_event_thread_keep_running || g_notification_count() > 0)
+    while(g_zwave_event_thread_keep_running || !g_notification_queue.empty())
     {
         rb_thread_blocking_region(wait_for_notification, &waiting_notification,
                                   stop_waiting_for_notification, NULL);
+
+        pthread_mutex_lock(&g_notification_mutex);
+        if(!g_notification_queue.empty())
+            waiting_notification = g_notification_queue.front();
+        pthread_mutex_unlock(&g_notification_mutex);
 
         if(waiting_notification != NULL)
         {
@@ -414,6 +367,10 @@ VALUE em_zwave_event_thread(void* args)
         }
 
         waiting_notification = NULL;
+
+        pthread_mutex_lock(&g_notification_mutex);
+        g_notification_queue.pop();
+        pthread_mutex_unlock(&g_notification_mutex);
     }
 
     // TODO: clean up all allocated resources

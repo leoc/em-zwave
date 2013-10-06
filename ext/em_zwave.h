@@ -1,8 +1,8 @@
 #ifndef EM_ZWAVE_H
 #define EM_ZWAVE_H
 
-#include <stdlib.h>
-
+#include<stdlib.h>
+#include<queue>
 
 #include <openzwave/value_classes/ValueID.h>
 
@@ -20,7 +20,6 @@ struct notification_t {
     uint8  button_id;
     uint8  scene_id;
     uint8  notification;
-    notification_t* next;
 };
 
 typedef struct node_info_t node_info_t;
@@ -30,8 +29,6 @@ struct node_info_t {
     bool          polling;
     list<ValueID> values;
 };
-
-static list<node_info_t*> g_nodes;
 
 /* Used to pack configuration data from the ruby class and pass it the */
 /* open zwave initialization function */
@@ -76,7 +73,7 @@ static bool            g_zwave_event_thread_keep_running = true;
  * openzwave producer and the ruby consumer. */
 static pthread_cond_t  g_notification_cond  = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t g_notification_mutex = PTHREAD_MUTEX_INITIALIZER;
-static notification_t* g_notification_queue = NULL;
+static queue<notification_t*> g_notification_queue;
 
 static int g_notification_overall = 0;
 #endif
