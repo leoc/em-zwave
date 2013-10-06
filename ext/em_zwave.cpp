@@ -548,6 +548,46 @@ VALUE rb_value_get_label(VALUE self)
 }
 
 extern "C"
+VALUE rb_value_get_units(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
+    uint32 id1 = (uint32)(long_id & 0xFFFFFFFF);
+    uint32 id2 = (uint32)(long_id >> 32);
+    uint8 node_id = (uint8)((id1 & 0xff000000) >> 24);
+    ValueID::ValueGenre genre = (ValueID::ValueGenre)((id1 & 0x00c00000) >> 22);
+    uint8 command_class_id = (uint8)((id1 & 0x003fc000) >> 14);
+    uint8 instance = (uint8)(((id2 & 0xff000000)) >> 24);
+    uint8 index = (uint8)((id1 & 0x00000ff0) >> 4);
+    ValueID::ValueType type = (ValueID::ValueType)(id1 & 0x0000000f);
+
+    ValueID id(home_id, node_id, genre, command_class_id, instance, index, type);
+
+    string units = Manager::Get()->GetValueUnits(id);
+    return rb_str_new2(units.c_str());
+}
+
+extern "C"
+VALUE rb_value_get_help(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
+    uint32 id1 = (uint32)(long_id & 0xFFFFFFFF);
+    uint32 id2 = (uint32)(long_id >> 32);
+    uint8 node_id = (uint8)((id1 & 0xff000000) >> 24);
+    ValueID::ValueGenre genre = (ValueID::ValueGenre)((id1 & 0x00c00000) >> 22);
+    uint8 command_class_id = (uint8)((id1 & 0x003fc000) >> 14);
+    uint8 instance = (uint8)(((id2 & 0xff000000)) >> 24);
+    uint8 index = (uint8)((id1 & 0x00000ff0) >> 4);
+    ValueID::ValueType type = (ValueID::ValueType)(id1 & 0x0000000f);
+
+    ValueID id(home_id, node_id, genre, command_class_id, instance, index, type);
+
+    string help = Manager::Get()->GetValueHelp(id);
+    return rb_str_new2(help.c_str());
+}
+
+extern "C"
 VALUE rb_value_get_min(VALUE self)
 {
     uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
@@ -566,6 +606,8 @@ VALUE rb_value_get_min(VALUE self)
     return INT2FIX(Manager::Get()->GetValueMin(id));
 }
 
+    printf("--- %s ---\n", str_val.c_str());
+
 extern "C"
 VALUE rb_value_get_max(VALUE self)
 {
@@ -583,6 +625,87 @@ VALUE rb_value_get_max(VALUE self)
     ValueID id(home_id, node_id, genre, command_class_id, instance, index, type);
 
     return INT2FIX(Manager::Get()->GetValueMax(id));
+}
+
+extern "C"
+VALUE rb_value_is_read_only(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
+    uint32 id1 = (uint32)(long_id & 0xFFFFFFFF);
+    uint32 id2 = (uint32)(long_id >> 32);
+    uint8 node_id = (uint8)((id1 & 0xff000000) >> 24);
+    ValueID::ValueGenre genre = (ValueID::ValueGenre)((id1 & 0x00c00000) >> 22);
+    uint8 command_class_id = (uint8)((id1 & 0x003fc000) >> 14);
+    uint8 instance = (uint8)(((id2 & 0xff000000)) >> 24);
+    uint8 index = (uint8)((id1 & 0x00000ff0) >> 4);
+    ValueID::ValueType type = (ValueID::ValueType)(id1 & 0x0000000f);
+
+    ValueID id(home_id, node_id, genre, command_class_id, instance, index, type);
+
+    bool readonly = Manager::Get()->IsValueReadOnly(id);
+    return (readonly ? Qtrue : Qfalse);
+}
+
+extern "C"
+VALUE rb_value_is_write_only(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
+    uint32 id1 = (uint32)(long_id & 0xFFFFFFFF);
+    uint32 id2 = (uint32)(long_id >> 32);
+    uint8 node_id = (uint8)((id1 & 0xff000000) >> 24);
+    ValueID::ValueGenre genre = (ValueID::ValueGenre)((id1 & 0x00c00000) >> 22);
+    uint8 command_class_id = (uint8)((id1 & 0x003fc000) >> 14);
+    uint8 instance = (uint8)(((id2 & 0xff000000)) >> 24);
+    uint8 index = (uint8)((id1 & 0x00000ff0) >> 4);
+    ValueID::ValueType type = (ValueID::ValueType)(id1 & 0x0000000f);
+
+    ValueID id(home_id, node_id, genre, command_class_id, instance, index, type);
+
+    bool writeonly = Manager::Get()->IsValueWriteOnly(id);
+    return (writeonly ? Qtrue : Qfalse);
+}
+
+extern "C"
+VALUE rb_value_is_set(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
+    uint32 id1 = (uint32)(long_id & 0xFFFFFFFF);
+    uint32 id2 = (uint32)(long_id >> 32);
+    uint8 node_id = (uint8)((id1 & 0xff000000) >> 24);
+    ValueID::ValueGenre genre = (ValueID::ValueGenre)((id1 & 0x00c00000) >> 22);
+    uint8 command_class_id = (uint8)((id1 & 0x003fc000) >> 14);
+    uint8 instance = (uint8)(((id2 & 0xff000000)) >> 24);
+    uint8 index = (uint8)((id1 & 0x00000ff0) >> 4);
+    ValueID::ValueType type = (ValueID::ValueType)(id1 & 0x0000000f);
+
+    ValueID id(home_id, node_id, genre, command_class_id, instance, index, type);
+
+    bool set = Manager::Get()->IsValueSet(id);
+    return (set ? Qtrue : Qfalse);
+}
+
+
+extern "C"
+VALUE rb_value_is_polled(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
+    uint32 id1 = (uint32)(long_id & 0xFFFFFFFF);
+    uint32 id2 = (uint32)(long_id >> 32);
+    uint8 node_id = (uint8)((id1 & 0xff000000) >> 24);
+    ValueID::ValueGenre genre = (ValueID::ValueGenre)((id1 & 0x00c00000) >> 22);
+    uint8 command_class_id = (uint8)((id1 & 0x003fc000) >> 14);
+    uint8 instance = (uint8)(((id2 & 0xff000000)) >> 24);
+    uint8 index = (uint8)((id1 & 0x00000ff0) >> 4);
+    ValueID::ValueType type = (ValueID::ValueType)(id1 & 0x0000000f);
+
+    ValueID id(home_id, node_id, genre, command_class_id, instance, index, type);
+
+    bool polled = Manager::Get()->IsValuePolled(id);
+    return (polled ? Qtrue : Qfalse);
 }
 
 extern "C"
@@ -787,10 +910,16 @@ void Init_emzwave() {
 
     rb_cValue = rb_define_class_under(rb_cZwave, "Value", rb_cObject);
     rb_define_method(rb_cValue, "label", (VALUE (*)(...))rb_value_get_label, 0);
+    rb_define_method(rb_cValue, "units", (VALUE (*)(...))rb_value_get_units, 0);
+    rb_define_method(rb_cValue, "help", (VALUE (*)(...))rb_value_get_help, 0);
     rb_define_method(rb_cValue, "min", (VALUE (*)(...))rb_value_get_min, 0);
     rb_define_method(rb_cValue, "max", (VALUE (*)(...))rb_value_get_max, 0);
     rb_define_method(rb_cValue, "get", (VALUE (*)(...))rb_value_get_value, 0);
     rb_define_method(rb_cValue, "set", (VALUE (*)(...))rb_value_set_value, 1);
+    rb_define_method(rb_cValue, "read_only?", (VALUE (*)(...))rb_value_is_read_only, 0);
+    rb_define_method(rb_cValue, "write_only?", (VALUE (*)(...))rb_value_is_write_only, 0);
+    rb_define_method(rb_cValue, "set?", (VALUE (*)(...))rb_value_is_set, 0);
+    rb_define_method(rb_cValue, "polled?", (VALUE (*)(...))rb_value_is_polled, 0);
 
     rb_cNotification = rb_define_class_under(rb_cZwave, "Notification", rb_cObject);
 }

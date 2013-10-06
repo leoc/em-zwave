@@ -24,11 +24,7 @@ module EventMachine
       def basic_type; end
       def generic_type; end
       def specific_type; end
-      def type
-        "test"
-      end
-
-      def neighbors; end
+      def type; end
 
       def manufacturer_name; end
       def manufacturer_id; end

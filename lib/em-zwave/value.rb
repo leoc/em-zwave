@@ -7,7 +7,9 @@ module EventMachine
         @value_id = value_id
       end
 
-      def node_id; end
+      def node_id
+
+      end
       def home_id
         @home_id
       end
@@ -39,15 +41,11 @@ module EventMachine
       def press_button; end
       def release_button; end
 
-      def to_i; end
-      def to_bool; end
-      def to_sym; end
-      def to_s
-
-      end
-
       def inspect
-        "Value[label=#{label},value=#{get},min=#{min},max=#{max}]"
+        ret = "Value[label=#{label},value=#{get},min=#{min},max=#{max}"
+        ret << ",units=#{units}" unless units == ""
+        ret << "]"
+        ret
       end
 
     end
