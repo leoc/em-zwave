@@ -47,6 +47,8 @@ static ID id_schedule_shutdown;
 static VALUE rb_mEm;
 static VALUE rb_cZwave;
 static VALUE rb_cNotification;
+static VALUE rb_cNode;
+static VALUE rb_cValue;
 
 static uint32 g_zwave_home_id = 0;
 static bool   g_zwave_init_failed = false;
