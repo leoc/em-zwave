@@ -535,6 +535,15 @@ VALUE rb_node_is_beaming_device(VALUE self)
 }
 
 extern "C"
+VALUE rb_node_is_routing_device(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
+    bool is_routing_device = Manager::Get()->IsNodeRoutingDevice(home_id, node_id);
+    return (is_routing_device ? Qtrue : Qfalse);
+}
+
+extern "C"
 VALUE rb_node_on(VALUE self)
 {
     uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
@@ -932,6 +941,7 @@ void Init_emzwave() {
     rb_define_method(rb_cNode, "listening_device?", (VALUE (*)(...))rb_node_is_listening_device, 0);
     rb_define_method(rb_cNode, "frequent_listening_device?", (VALUE (*)(...))rb_node_is_frequent_listening_device, 0);
     rb_define_method(rb_cNode, "beaming_device?", (VALUE (*)(...))rb_node_is_beaming_device, 0);
+    rb_define_method(rb_cNode, "routing_device?", (VALUE (*)(...))rb_node_is_routing_device, 0);
     //rb_define_method(rb_cZwave, "values", (VALUE (*)(...))rb_node_values, 0);
 
     rb_cValue = rb_define_class_under(rb_cZwave, "Value", rb_cObject);
