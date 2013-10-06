@@ -222,6 +222,20 @@ VALUE rb_zwave_shutdown(VALUE self)
 }
 
 extern "C"
+VALUE rb_zwave_all_on(VALUE self)
+{
+    Manager::Get()->SwitchAllOn(g_zwave_home_id);
+    return Qnil;
+}
+
+extern "C"
+VALUE rb_zwave_all_off(VALUE self)
+{
+    Manager::Get()->SwitchAllOff(g_zwave_home_id);
+    return Qnil;
+}
+
+extern "C"
 VALUE wait_for_notification(void* n) {
     notification_t** notification = (notification_t**)n;
 
