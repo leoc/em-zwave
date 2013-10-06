@@ -432,6 +432,31 @@ VALUE em_zwave_event_thread(void* args)
             rb_hash_aset(notification_options, ID2SYM(rb_intern("type")), em_zwave_get_notification_type_symbol(waiting_notification->type));
             rb_hash_aset(notification_options, ID2SYM(rb_intern("home_id")), INT2FIX(waiting_notification->home_id));
             rb_hash_aset(notification_options, ID2SYM(rb_intern("node_id")), INT2FIX(waiting_notification->node_id));
+            rb_hash_aset(notification_options, ID2SYM(rb_intern("value_id")), LONG2FIX(waiting_notification->value_id));
+
+            if(Notification::Type_NodeEvent == waiting_notification->type)
+            {
+                rb_hash_aset(notification_options, ID2SYM(rb_intern("event")), INT2FIX(waiting_notification->event));
+            }
+            if(Notification::Type_Group == waiting_notification->type)
+            {
+                rb_hash_aset(notification_options, ID2SYM(rb_intern("group_index")), INT2FIX(waiting_notification->group_index));
+            }
+            if(Notification::Type_CreateButton == waiting_notification->type ||
+               Notification::Type_DeleteButton == waiting_notification->type ||
+               Notification::Type_ButtonOn     == waiting_notification->type ||
+               Notification::Type_ButtonOff    == waiting_notification->type)
+            {
+                rb_hash_aset(notification_options, ID2SYM(rb_intern("button_id")), INT2FIX(waiting_notification->button_id));
+            }
+            if(Notification::Type_SceneEvent == waiting_notification->type)
+            {
+                rb_hash_aset(notification_options, ID2SYM(rb_intern("scene_id")), INT2FIX(waiting_notification->scene_id));
+            }
+            if(Notification::Type_Notification == waiting_notification->type)
+            {
+                rb_hash_aset(notification_options, ID2SYM(rb_intern("notification")), INT2FIX(waiting_notification->notification));
+            }
 
             VALUE init_argv[1];
             init_argv[0] = notification_options;
