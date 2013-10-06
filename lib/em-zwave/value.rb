@@ -47,7 +47,7 @@ module EventMachine
       end
 
       def inspect
-        "Value[label=#{label},value=#{get}]"
+        "Value[label=#{label},value=#{get},min=#{min},max=#{max}]"
       end
 
     end
