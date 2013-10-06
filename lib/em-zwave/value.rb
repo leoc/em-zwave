@@ -7,9 +7,6 @@ module EventMachine
         @value_id = value_id
       end
 
-      def node_id
-
-      end
       def home_id
         @home_id
       end
@@ -17,6 +14,11 @@ module EventMachine
       def node
         @node ||= Node.new(home_id, node_id)
       end
+
+      def node_id; end
+      def instance; end
+      def index; end
+      def type; end
 
       def label; end
       def units; end
