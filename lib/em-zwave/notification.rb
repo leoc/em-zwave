@@ -21,6 +21,14 @@ module EventMachine
         @notification = options[:notification] if options[:type] == :notification
       end
 
+      def value
+        Value.new(@home_id, @value_id)
+      end
+
+      def node
+        Node.new(@home_id, @node_id)
+      end
+
       def to_s
         str = 'Notification['
         str << "type=#{type.inspect}"
