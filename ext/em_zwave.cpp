@@ -933,12 +933,6 @@ VALUE rb_value_get_value(VALUE self)
     string str_val;
     Manager::Get()->GetValueAsString(id, &str_val);
 
-    printf("--- %s ---\n", str_val.c_str());
-
-    if(str_val == "True") printf("AN! \n");
-    if(str_val == "False") printf("AUS! \n");
-
-
     switch(id.GetType()) {
     case ValueID::ValueType_Bool:
         {
