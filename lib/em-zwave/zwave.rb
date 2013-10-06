@@ -62,6 +62,10 @@ module EventMachine
       shutdown_callbacks.each(&:call)
     end
 
+    def invoke_initialization_callbacks
+      initialization_callbacks.each(&:call)
+    end
+
     def schedule_shutdown
       EM.schedule do
         @stop_emzwave = true
@@ -77,8 +81,16 @@ module EventMachine
       callbacks << block
     end
 
+    def on_initialization_finished(&block)
+      initialization_callbacks << block
+    end
+
     def on_shutdown(&block)
       shutdown_callbacks << block
+    end
+
+    def initialization_callbacks
+      @initialization_callbacks ||= []
     end
 
     def shutdown_callbacks
