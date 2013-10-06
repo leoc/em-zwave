@@ -1098,9 +1098,6 @@ void Init_emzwave() {
     rb_define_method(rb_cZwave, "all_off!", (VALUE (*)(...))rb_zwave_all_off, 0);
 
     rb_cNode  = rb_define_class_under(rb_cZwave, "Node", rb_cObject);
-    // rb_define_method(rb_cZwave, "basic_type", (VALUE (*)(...))rb_node_basic_type, 0);
-    // rb_define_method(rb_cZwave, "generic_type", (VALUE (*)(...))rb_node_generic_type, 0);
-    // rb_define_method(rb_cZwave, "specific_type", (VALUE (*)(...))rb_node_specific_type, 0);
     rb_define_method(rb_cNode, "type", (VALUE (*)(...))rb_node_type, 0);
     rb_define_method(rb_cNode, "on!", (VALUE (*)(...))rb_node_on, 0);
     rb_define_method(rb_cNode, "off!", (VALUE (*)(...))rb_node_off, 0);
