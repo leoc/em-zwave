@@ -38,6 +38,18 @@ module EventMachine
       callbacks.each do |cb|
         cb.call(notification)
       end
+
+      type_callbacks(notification.type).each do |callback|
+        case notification.type
+        when :value_changed, :value_added, :value_removed
+          callback.call(notification.value, notification)
+        when :node_added, :node_removed
+          callback.call(notification.node, notification)
+        else
+          callback.call(notification)
+        end
+      end
+
       @scheduled_notification_count -= 1
       if @stop_emzwave && @scheduled_notification_count <= 0
         invoke_shutdown_callbacks
@@ -57,6 +69,10 @@ module EventMachine
       end
     end
 
+    def on(type, &block)
+      type_callbacks(type) << block
+    end
+
     def on_notification(&block)
       callbacks << block
     end
@@ -67,6 +83,11 @@ module EventMachine
 
     def shutdown_callbacks
       @shutdown_callbacks ||= []
+    end
+
+    def type_callbacks(type)
+      @type_callbacks ||= {}
+      @type_callbacks[type] ||= []
     end
 
     def callbacks
