@@ -504,8 +504,16 @@ VALUE rb_node_type(VALUE self)
     uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
     uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
     string type = Manager::Get()->GetNodeType(home_id, node_id);
-    printf("%s \n", type.c_str());
     return rb_str_new2(type.c_str());
+}
+
+extern "C"
+VALUE rb_node_is_listening_device(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
+    bool is_listening_device = Manager::Get()->IsNodeListeningDevice(home_id, node_id);
+    return (is_listening_device ? Qtrue : Qfalse);
 }
 
 extern "C"
@@ -525,7 +533,6 @@ VALUE rb_node_off(VALUE self)
     Manager::Get()->SetNodeOff(home_id, node_id);
     return Qnil;
 }
-
 
 extern "C"
 VALUE rb_value_get_label(VALUE self)
@@ -605,8 +612,6 @@ VALUE rb_value_get_min(VALUE self)
 
     return INT2FIX(Manager::Get()->GetValueMin(id));
 }
-
-    printf("--- %s ---\n", str_val.c_str());
 
 extern "C"
 VALUE rb_value_get_max(VALUE self)
@@ -906,6 +911,7 @@ void Init_emzwave() {
     rb_define_method(rb_cNode, "type", (VALUE (*)(...))rb_node_type, 0);
     rb_define_method(rb_cNode, "on!", (VALUE (*)(...))rb_node_on, 0);
     rb_define_method(rb_cNode, "off!", (VALUE (*)(...))rb_node_off, 0);
+    rb_define_method(rb_cNode, "listening_device?", (VALUE (*)(...))rb_node_is_listening_device, 0);
     //rb_define_method(rb_cZwave, "values", (VALUE (*)(...))rb_node_values, 0);
 
     rb_cValue = rb_define_class_under(rb_cZwave, "Value", rb_cObject);
