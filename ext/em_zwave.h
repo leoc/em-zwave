@@ -3,15 +3,15 @@
 
 typedef struct notification_t notification_t;
 struct notification_t {
-    int type;
-    int home_id;
-    int node_id;
-    int value_id;
-    int event;
-    int group_index;
-    int button_id;
-    int scene_id;
-    int notification;
+    int    type;
+    uint32 home_id;
+    uint8  node_id;
+    uint64 value_id;
+    uint8  event;
+    uint8  group_index;
+    uint8  button_id;
+    uint8  scene_id;
+    uint8  notification;
     notification_t* next;
 };
 
