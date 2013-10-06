@@ -1066,7 +1066,6 @@ void Init_emzwave() {
     rb_define_method(rb_cNode, "name", (VALUE (*)(...))rb_node_get_name, 0);
     rb_define_method(rb_cNode, "location", (VALUE (*)(...))rb_node_get_location, 0);
     rb_define_method(rb_cNode, "level=", (VALUE (*)(...))rb_node_set_level, 1);
-    //rb_define_method(rb_cZwave, "values", (VALUE (*)(...))rb_node_values, 0);
 
     rb_cValue = rb_define_class_under(rb_cZwave, "Value", rb_cObject);
     rb_define_method(rb_cValue, "label", (VALUE (*)(...))rb_value_get_label, 0);
