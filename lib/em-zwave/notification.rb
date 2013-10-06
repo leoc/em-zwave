@@ -9,6 +9,8 @@ module EventMachine
       attr_reader :scene_id # only when type == :scene_event
       attr_reader :notification # only when type == :notification
 
+      attr_accessor :node, :value
+
       def initialize(options = {})
         @type         = options[:type]
         @home_id      = options[:home_id]
@@ -19,14 +21,6 @@ module EventMachine
         @button_id    = options[:button_id]    if options[:type] == :create_button
         @scene_id     = options[:scene_id]     if options[:type] == :scene_event
         @notification = options[:notification] if options[:type] == :notification
-      end
-
-      def value
-        @value ||= Value.new(@home_id, @value_id)
-      end
-
-      def node
-        @node ||= Node.new(@home_id, @node_id)
       end
 
       def to_s
