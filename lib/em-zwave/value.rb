@@ -13,7 +13,7 @@ module EventMachine
       end
 
       def node
-        Node.new(home_id, node_id)
+        @node ||= Node.new(home_id, node_id)
       end
 
       def label; end
