@@ -877,6 +877,42 @@ VALUE rb_value_is_polled(VALUE self)
 }
 
 extern "C"
+VALUE rb_value_get_node_id(VALUE self)
+{
+    uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
+    uint32 id1 = (uint32)(long_id & 0xFFFFFFFF);
+    uint8 node_id = (uint8)((id1 & 0xff000000) >> 24);
+    return INT2FIX(node_id);
+}
+
+extern "C"
+VALUE rb_value_get_instance(VALUE self)
+{
+    uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
+    uint32 id2 = (uint32)(long_id >> 32);
+    uint8 instance = (uint8)(((id2 & 0xff000000)) >> 24);
+    return INT2FIX(instance);
+}
+
+extern "C"
+VALUE rb_value_get_index(VALUE self)
+{
+    uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
+    uint32 id1 = (uint32)(long_id & 0xFFFFFFFF);
+    uint8 index = (uint8)((id1 & 0x00000ff0) >> 4);
+    return INT2FIX(index);
+}
+
+extern "C"
+VALUE rb_value_get_type(VALUE self)
+{
+    uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
+    uint32 id1 = (uint32)(long_id & 0xFFFFFFFF);
+    ValueID::ValueType type = (ValueID::ValueType)(id1 & 0x0000000f);
+    return INT2FIX(type);
+}
+
+extern "C"
 VALUE rb_value_get_value(VALUE self)
 {
     uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
@@ -1107,6 +1143,10 @@ void Init_emzwave() {
     rb_define_method(rb_cValue, "write_only?", (VALUE (*)(...))rb_value_is_write_only, 0);
     rb_define_method(rb_cValue, "set?", (VALUE (*)(...))rb_value_is_set, 0);
     rb_define_method(rb_cValue, "polled?", (VALUE (*)(...))rb_value_is_polled, 0);
+    rb_define_method(rb_cValue, "node_id", (VALUE (*)(...))rb_value_get_node_id, 0);
+    rb_define_method(rb_cValue, "instance", (VALUE (*)(...))rb_value_get_instance, 0);
+    rb_define_method(rb_cValue, "index", (VALUE (*)(...))rb_value_get_index, 0);
+    rb_define_method(rb_cValue, "type", (VALUE (*)(...))rb_value_get_type, 0);
 
     rb_cNotification = rb_define_class_under(rb_cZwave, "Notification", rb_cObject);
 }
