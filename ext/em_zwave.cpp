@@ -497,6 +497,34 @@ VALUE rb_zwave_initialize_zwave(VALUE self) {
 }
 
 extern "C"
+VALUE rb_node_type(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
+    string type = Manager::Get()->GetNodeType(home_id, node_id);
+    printf("%s \n", type.c_str());
+    return rb_str_new2(type.c_str());
+}
+
+extern "C"
+VALUE rb_node_on(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
+    Manager::Get()->SetNodeOn(home_id, node_id);
+    return Qnil;
+}
+
+extern "C"
+VALUE rb_node_off(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
+    Manager::Get()->SetNodeOff(home_id, node_id);
+    return Qnil;
+}
+
+extern "C"
 void Init_emzwave() {
     id_push_notification = rb_intern("push_notification");
     id_schedule_shutdown = rb_intern("schedule_shutdown");
