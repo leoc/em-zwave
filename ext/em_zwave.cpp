@@ -115,76 +115,19 @@ void zwave_on_notification(Notification const* _notification, void* _context) {
     pthread_mutex_lock(&g_zwave_notification_mutex);
 
     switch(_notification->GetType()) {
-    case Notification::Type_ValueAdded:
-        {
-            if(node_info_t* node_info = g_get_node_info(_notification))
-            {
-                node_info->values.push_back(_notification->GetValueID());
-            }
-            break;
-        }
-    case Notification::Type_ValueRemoved:
-        {
-            if(node_info_t* node_info = g_get_node_info(_notification))
-            {
-                for( list<ValueID>::iterator it = node_info->values.begin(); it != node_info->values.end(); ++it)
-                {
-                    if((*it) == _notification->GetValueID())
-                    {
-                        node_info->values.erase( it );
-                        break;
-                    }
-                }
-            }
-            break;
-        }
+    case Notification::Type_ValueAdded: break;
+    case Notification::Type_ValueRemoved: break;
     case Notification::Type_ValueChanged:  break;
     case Notification::Type_ValueRefreshed: break;
     case Notification::Type_Group: break;
     case Notification::Type_NodeNew: break;
-    case Notification::Type_NodeAdded:
-        {
-            node_info_t* node_info = (node_info_t*)malloc(sizeof(node_info_t));
-            node_info->home_id = _notification->GetHomeId();
-            node_info->node_id = _notification->GetNodeId();
-            node_info->polling = false;
-            g_nodes.push_back(node_info);
-            break;
-        }
-    case Notification::Type_NodeRemoved:
-        {
-            uint32 const home_id = _notification->GetHomeId();
-            uint8 const node_id = _notification->GetNodeId();
-            for(list<node_info_t*>::iterator it = g_nodes.begin(); it != g_nodes.end(); ++it)
-            {
-                node_info_t* node_info = *it;
-                if((node_info->home_id == home_id) && (node_info->node_id == node_id))
-                {
-                    g_nodes.erase(it);
-                    break;
-                }
-            }
-            break;
-        }
+    case Notification::Type_NodeAdded: break;
+    case Notification::Type_NodeRemoved: break;
     case Notification::Type_NodeProtocolInfo: break;
     case Notification::Type_NodeNaming: break;
     case Notification::Type_NodeEvent: break;
-    case Notification::Type_PollingDisabled:
-        {
-            if(node_info_t* node_info = g_get_node_info(_notification))
-            {
-                node_info->polling = false;
-            }
-            break;
-        }
-    case Notification::Type_PollingEnabled:
-        {
-            if(node_info_t* node_info = g_get_node_info(_notification))
-            {
-                node_info->polling = true;
-            }
-            break;
-        }
+    case Notification::Type_PollingDisabled: break;
+    case Notification::Type_PollingEnabled: break;
     case Notification::Type_SceneEvent: break;
     case Notification::Type_CreateButton: break;
     case Notification::Type_DeleteButton: break;
@@ -195,12 +138,14 @@ void zwave_on_notification(Notification const* _notification, void* _context) {
             g_zwave_home_id = _notification->GetHomeId();
             break;
         }
+
     case Notification::Type_DriverFailed:
         {
             g_zwave_init_failed = true;
             pthread_cond_broadcast(&g_zwave_init_cond);
             break;
         }
+
     case Notification::Type_DriverReset: break;
     case Notification::Type_EssentialNodeQueriesComplete: break;
     case Notification::Type_NodeQueriesComplete: break;
@@ -211,6 +156,7 @@ void zwave_on_notification(Notification const* _notification, void* _context) {
             pthread_cond_broadcast(&g_zwave_init_cond);
             break;
         }
+
     case Notification::Type_Notification: break;
     }
 
