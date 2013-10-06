@@ -553,6 +553,15 @@ VALUE rb_node_is_security_device(VALUE self)
 }
 
 extern "C"
+VALUE rb_node_get_max_baud_rate(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
+    uint32 max_baud_rate = Manager::Get()->GetNodeMaxBaudRate(home_id, node_id);
+    return INT2FIX(max_baud_rate);
+}
+
+extern "C"
 VALUE rb_node_on(VALUE self)
 {
     uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
@@ -952,6 +961,7 @@ void Init_emzwave() {
     rb_define_method(rb_cNode, "beaming_device?", (VALUE (*)(...))rb_node_is_beaming_device, 0);
     rb_define_method(rb_cNode, "routing_device?", (VALUE (*)(...))rb_node_is_routing_device, 0);
     rb_define_method(rb_cNode, "security_device?", (VALUE (*)(...))rb_node_is_security_device, 0);
+    rb_define_method(rb_cNode, "max_baud_rate", (VALUE (*)(...))rb_node_get_max_baud_rate, 0);
     //rb_define_method(rb_cZwave, "values", (VALUE (*)(...))rb_node_values, 0);
 
     rb_cValue = rb_define_class_under(rb_cZwave, "Value", rb_cObject);
