@@ -548,6 +548,222 @@ VALUE rb_value_get_label(VALUE self)
 }
 
 extern "C"
+VALUE rb_value_get_min(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
+    uint32 id1 = (uint32)(long_id & 0xFFFFFFFF);
+    uint32 id2 = (uint32)(long_id >> 32);
+    uint8 node_id = (uint8)((id1 & 0xff000000) >> 24);
+    ValueID::ValueGenre genre = (ValueID::ValueGenre)((id1 & 0x00c00000) >> 22);
+    uint8 command_class_id = (uint8)((id1 & 0x003fc000) >> 14);
+    uint8 instance = (uint8)(((id2 & 0xff000000)) >> 24);
+    uint8 index = (uint8)((id1 & 0x00000ff0) >> 4);
+    ValueID::ValueType type = (ValueID::ValueType)(id1 & 0x0000000f);
+
+    ValueID id(home_id, node_id, genre, command_class_id, instance, index, type);
+
+    return INT2FIX(Manager::Get()->GetValueMin(id));
+}
+
+extern "C"
+VALUE rb_value_get_max(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
+    uint32 id1 = (uint32)(long_id & 0xFFFFFFFF);
+    uint32 id2 = (uint32)(long_id >> 32);
+    uint8 node_id = (uint8)((id1 & 0xff000000) >> 24);
+    ValueID::ValueGenre genre = (ValueID::ValueGenre)((id1 & 0x00c00000) >> 22);
+    uint8 command_class_id = (uint8)((id1 & 0x003fc000) >> 14);
+    uint8 instance = (uint8)(((id2 & 0xff000000)) >> 24);
+    uint8 index = (uint8)((id1 & 0x00000ff0) >> 4);
+    ValueID::ValueType type = (ValueID::ValueType)(id1 & 0x0000000f);
+
+    ValueID id(home_id, node_id, genre, command_class_id, instance, index, type);
+
+    return INT2FIX(Manager::Get()->GetValueMax(id));
+}
+
+extern "C"
+VALUE rb_value_get_value(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
+    uint32 id1 = (uint32)(long_id & 0xFFFFFFFF);
+    uint32 id2 = (uint32)(long_id >> 32);
+    uint8 node_id = (uint8)((id1 & 0xff000000) >> 24);
+    ValueID::ValueGenre genre = (ValueID::ValueGenre)((id1 & 0x00c00000) >> 22);
+    uint8 command_class_id = (uint8)((id1 & 0x003fc000) >> 14);
+    uint8 instance = (uint8)(((id2 & 0xff000000)) >> 24);
+    uint8 index = (uint8)((id1 & 0x00000ff0) >> 4);
+    ValueID::ValueType type = (ValueID::ValueType)(id1 & 0x0000000f);
+
+    ValueID id(home_id, node_id, genre, command_class_id, instance, index, type);
+
+    VALUE value = Qnil;
+
+    string str_val;
+    Manager::Get()->GetValueAsString(id, &str_val);
+
+    printf("--- %s ---\n", str_val.c_str());
+
+    if(str_val == "True") printf("AN! \n");
+    if(str_val == "False") printf("AUS! \n");
+
+
+    switch(id.GetType()) {
+    case ValueID::ValueType_Bool:
+        {
+            bool val;
+            Manager::Get()->GetValueAsBool(id, &val);
+            value = val ? Qtrue : Qfalse;
+            break;
+        }
+    case ValueID::ValueType_Byte:
+        {
+            uint8 val;
+            Manager::Get()->GetValueAsByte(id, &val);
+            value = INT2FIX(val);
+            break;
+        }
+    case ValueID::ValueType_Decimal:
+        {
+            float val;
+            Manager::Get()->GetValueAsFloat(id, &val);
+            value = rb_float_new(val);
+            break;
+        }
+    case ValueID::ValueType_Int:
+        {
+            int32 val;
+            Manager::Get()->GetValueAsInt(id, &val);
+            value = INT2FIX(val);
+            break;
+        }
+    case ValueID::ValueType_List:
+        {
+            printf("List values not yet implemented!\n");
+            break;
+        }
+
+    case ValueID::ValueType_Schedule:
+        {
+            printf("Schedule values not yet implemented!\n");
+            break;
+        }
+
+    case ValueID::ValueType_Short:
+        {
+            int16 val;
+            Manager::Get()->GetValueAsShort(id, &val);
+            value = INT2FIX(val);
+            break;
+        }
+
+    case ValueID::ValueType_String:
+        {
+            value = rb_str_new2(str_val.c_str());
+            break;
+        }
+
+    case ValueID::ValueType_Button:
+        {
+            printf("Button values not yet implemented!\n");
+            break;
+        }
+
+    case ValueID::ValueType_Raw:
+        {
+            printf("Raw values not yet implemented!\n");
+            break;
+        }
+    }
+    return value;
+}
+
+extern "C"
+VALUE rb_value_set_value(VALUE self, VALUE val)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
+    uint32 id1 = (uint32)(long_id & 0xFFFFFFFF);
+    uint32 id2 = (uint32)(long_id >> 32);
+    uint8 node_id = (uint8)((id1 & 0xff000000) >> 24);
+    ValueID::ValueGenre genre = (ValueID::ValueGenre)((id1 & 0x00c00000) >> 22);
+    uint8 command_class_id = (uint8)((id1 & 0x003fc000) >> 14);
+    uint8 instance = (uint8)(((id2 & 0xff000000)) >> 24);
+    uint8 index = (uint8)((id1 & 0x00000ff0) >> 4);
+    ValueID::ValueType type = (ValueID::ValueType)(id1 & 0x0000000f);
+
+    ValueID id(home_id, node_id, genre, command_class_id, instance, index, type);
+
+    switch(id.GetType()) {
+    case ValueID::ValueType_Bool:
+        {
+            Manager::Get()->SetValue(id, (bool)(val == Qtrue ? 1 : 0));
+            break;
+        }
+
+    case ValueID::ValueType_Byte:
+        {
+            Manager::Get()->SetValue(id, (uint8)FIX2UINT(val));
+            break;
+        }
+
+    case ValueID::ValueType_Decimal:
+        {
+            Manager::Get()->SetValue(id, (float)NUM2DBL(val));
+            break;
+        }
+
+    case ValueID::ValueType_Int:
+        {
+            Manager::Get()->SetValue(id, (int32)FIX2INT(val));
+            break;
+        }
+
+    case ValueID::ValueType_List:
+        {
+            printf("List values not yet implemented!\n");
+            break;
+        }
+
+    case ValueID::ValueType_Schedule:
+        {
+            printf("Schedule values not yet implemented!\n");
+            break;
+        }
+
+    case ValueID::ValueType_Short:
+        {
+            Manager::Get()->SetValue(id, (int16)FIX2INT(val));
+            break;
+        }
+
+    case ValueID::ValueType_String:
+        {
+            string val_str(StringValuePtr(val));
+            Manager::Get()->SetValue(id, val_str);
+            break;
+        }
+    case ValueID::ValueType_Button:
+        {
+            printf("Button values not yet implemented!\n");
+            break;
+        }
+
+    case ValueID::ValueType_Raw:
+        {
+            printf("Raw values not yet implemented!\n");
+            break;
+        }
+    }
+
+    return Qnil;
+}
+
+extern "C"
 void Init_emzwave() {
     id_push_notification = rb_intern("push_notification");
     id_schedule_shutdown = rb_intern("schedule_shutdown");
@@ -571,6 +787,10 @@ void Init_emzwave() {
 
     rb_cValue = rb_define_class_under(rb_cZwave, "Value", rb_cObject);
     rb_define_method(rb_cValue, "label", (VALUE (*)(...))rb_value_get_label, 0);
+    rb_define_method(rb_cValue, "min", (VALUE (*)(...))rb_value_get_min, 0);
+    rb_define_method(rb_cValue, "max", (VALUE (*)(...))rb_value_get_max, 0);
+    rb_define_method(rb_cValue, "get", (VALUE (*)(...))rb_value_get_value, 0);
+    rb_define_method(rb_cValue, "set", (VALUE (*)(...))rb_value_set_value, 1);
 
     rb_cNotification = rb_define_class_under(rb_cZwave, "Notification", rb_cObject);
 }
