@@ -11,6 +11,14 @@ EM.run do
     puts "Notification in user code: #{notification}"
   end
 
+  @zwave.on(:value_changed) do |value|
+    if value.label == "Level" && value.get > 50
+      EM::Timer.new(5) do
+        value.set(10)
+      end
+    end
+  end
+
   @zwave.on_shutdown do
     EM.stop
   end
