@@ -607,6 +607,69 @@ VALUE rb_node_type(VALUE self)
 }
 
 extern "C"
+VALUE rb_node_get_manufacturer_name(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
+    string manufacturer_name = Manager::Get()->GetNodeManufacturerName(home_id, node_id);
+    return rb_str_new2(manufacturer_name.c_str());
+}
+
+extern "C"
+VALUE rb_node_get_manufacturer_id(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
+    string manufacturer_id = Manager::Get()->GetNodeManufacturerId(home_id, node_id);
+    return rb_str_new2(manufacturer_id.c_str());
+}
+
+extern "C"
+VALUE rb_node_get_product_name(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
+    string product_name = Manager::Get()->GetNodeProductName(home_id, node_id);
+    return rb_str_new2(product_name.c_str());
+}
+
+extern "C"
+VALUE rb_node_get_product_type(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
+    string product_type = Manager::Get()->GetNodeProductType(home_id, node_id);
+    return rb_str_new2(product_type.c_str());
+}
+
+extern "C"
+VALUE rb_node_get_product_id(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
+    string product_id = Manager::Get()->GetNodeProductId(home_id, node_id);
+    return rb_str_new2(product_id.c_str());
+}
+
+extern "C"
+VALUE rb_node_get_name(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
+    string name = Manager::Get()->GetNodeName(home_id, node_id);
+    return rb_str_new2(name.c_str());
+}
+
+extern "C"
+VALUE rb_node_get_location(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
+    string location = Manager::Get()->GetNodeLocation(home_id, node_id);
+    return rb_str_new2(location.c_str());
+}
+
+extern "C"
 VALUE rb_node_on(VALUE self)
 {
     uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
@@ -1012,6 +1075,13 @@ void Init_emzwave() {
     rb_define_method(rb_cNode, "basic_type", (VALUE (*)(...))rb_node_get_basic_type, 0);
     rb_define_method(rb_cNode, "generic_type", (VALUE (*)(...))rb_node_get_generic_type, 0);
     rb_define_method(rb_cNode, "specific_type", (VALUE (*)(...))rb_node_get_specific_type, 0);
+    rb_define_method(rb_cNode, "manufacturer_name", (VALUE (*)(...))rb_node_get_manufacturer_name, 0);
+    rb_define_method(rb_cNode, "manufacturer_id", (VALUE (*)(...))rb_node_get_manufacturer_id, 0);
+    rb_define_method(rb_cNode, "product_name", (VALUE (*)(...))rb_node_get_product_name, 0);
+    rb_define_method(rb_cNode, "product_type", (VALUE (*)(...))rb_node_get_product_type, 0);
+    rb_define_method(rb_cNode, "product_id", (VALUE (*)(...))rb_node_get_product_id, 0);
+    rb_define_method(rb_cNode, "name", (VALUE (*)(...))rb_node_get_name, 0);
+    rb_define_method(rb_cNode, "location", (VALUE (*)(...))rb_node_get_location, 0);
     //rb_define_method(rb_cZwave, "values", (VALUE (*)(...))rb_node_values, 0);
 
     rb_cValue = rb_define_class_under(rb_cZwave, "Value", rb_cObject);
