@@ -526,6 +526,27 @@ VALUE rb_node_off(VALUE self)
     return Qnil;
 }
 
+
+extern "C"
+VALUE rb_value_get_label(VALUE self)
+{
+    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
+    uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
+    uint32 id1 = (uint32)(long_id & 0xFFFFFFFF);
+    uint32 id2 = (uint32)(long_id >> 32);
+    uint8 node_id = (uint8)((id1 & 0xff000000) >> 24);
+    ValueID::ValueGenre genre = (ValueID::ValueGenre)((id1 & 0x00c00000) >> 22);
+    uint8 command_class_id = (uint8)((id1 & 0x003fc000) >> 14);
+    uint8 instance = (uint8)(((id2 & 0xff000000)) >> 24);
+    uint8 index = (uint8)((id1 & 0x00000ff0) >> 4);
+    ValueID::ValueType type = (ValueID::ValueType)(id1 & 0x0000000f);
+
+    ValueID id(home_id, node_id, genre, command_class_id, instance, index, type);
+
+    string label = Manager::Get()->GetValueLabel(id);
+    return rb_str_new2(label.c_str());
+}
+
 extern "C"
 void Init_emzwave() {
     id_push_notification = rb_intern("push_notification");
