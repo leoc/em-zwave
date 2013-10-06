@@ -557,6 +557,20 @@ void Init_emzwave() {
     rb_cZwave = rb_define_class_under(rb_mEm, "Zwave", rb_cObject);
     rb_define_method(rb_cZwave, "initialize_zwave", (VALUE (*)(...))rb_zwave_initialize_zwave, 0);
     rb_define_method(rb_cZwave, "shutdown", (VALUE (*)(...))rb_zwave_shutdown, 0);
+    rb_define_method(rb_cZwave, "all_on!", (VALUE (*)(...))rb_zwave_all_on, 0);
+    rb_define_method(rb_cZwave, "all_off!", (VALUE (*)(...))rb_zwave_all_off, 0);
+
+    rb_cNode  = rb_define_class_under(rb_cZwave, "Node", rb_cObject);
+    // rb_define_method(rb_cZwave, "basic_type", (VALUE (*)(...))rb_node_basic_type, 0);
+    // rb_define_method(rb_cZwave, "generic_type", (VALUE (*)(...))rb_node_generic_type, 0);
+    // rb_define_method(rb_cZwave, "specific_type", (VALUE (*)(...))rb_node_specific_type, 0);
+    rb_define_method(rb_cNode, "type", (VALUE (*)(...))rb_node_type, 0);
+    rb_define_method(rb_cNode, "on!", (VALUE (*)(...))rb_node_on, 0);
+    rb_define_method(rb_cNode, "off!", (VALUE (*)(...))rb_node_off, 0);
+    //rb_define_method(rb_cZwave, "values", (VALUE (*)(...))rb_node_values, 0);
+
+    rb_cValue = rb_define_class_under(rb_cZwave, "Value", rb_cObject);
+    rb_define_method(rb_cValue, "label", (VALUE (*)(...))rb_value_get_label, 0);
 
     rb_cNotification = rb_define_class_under(rb_cZwave, "Notification", rb_cObject);
 }
