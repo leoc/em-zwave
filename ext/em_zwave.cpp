@@ -134,6 +134,8 @@ VALUE start_openzwave(void* data) {
     Options::Create(config_path, "", "");
     Options::Get()->AddOptionBool("PerformReturnRoutes", false);
     Options::Get()->AddOptionBool("ConsoleOutput", false);
+    Options::Get()->AddOptionBool("ValidateValueChanges", true);
+    Options::Get()->AddOptionBool("SuppressValueRefresh", true);
     Options::Get()->Lock();
     Manager::Create();
 
