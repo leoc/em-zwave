@@ -151,12 +151,6 @@ VALUE start_openzwave(void* data) {
     if(!g_zwave_init_failed) {
         Manager::Get()->WriteConfig(g_zwave_home_id);
 
-        Driver::DriverData data;
-        Manager::Get()->GetDriverStatistics(g_zwave_home_id, &data);
-        printf("SOF: %d ACK Waiting: %d Read Aborts: %d Bad Checksums: %d\n", data.m_SOFCnt, data.m_ACKWaiting, data.m_readAborts, data.m_badChecksum);
-        printf("Reads: %d Writes: %d CAN: %d NAK: %d ACK: %d Out of Frame: %d\n", data.m_readCnt, data.m_writeCnt, data.m_CANCnt, data.m_NAKCnt, data.m_ACKCnt, data.m_OOFCnt);
-        printf("Dropped: %d Retries: %d\n", data.m_dropped, data.m_retries);
-
         g_zwave_init_done = true;
         pthread_mutex_unlock(&g_zwave_init_mutex);
 
