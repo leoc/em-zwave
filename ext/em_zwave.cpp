@@ -867,18 +867,8 @@ VALUE rb_value_get_value(VALUE self)
             value = INT2FIX(val);
             break;
         }
-    case ValueID::ValueType_List:
-        {
-            printf("List values not yet implemented!\n");
-            break;
-        }
-
-    case ValueID::ValueType_Schedule:
-        {
-            printf("Schedule values not yet implemented!\n");
-            break;
-        }
-
+    case ValueID::ValueType_List: break;
+    case ValueID::ValueType_Schedule: break;
     case ValueID::ValueType_Short:
         {
             int16 val;
@@ -893,17 +883,8 @@ VALUE rb_value_get_value(VALUE self)
             break;
         }
 
-    case ValueID::ValueType_Button:
-        {
-            printf("Button values not yet implemented!\n");
-            break;
-        }
-
-    case ValueID::ValueType_Raw:
-        {
-            printf("Raw values not yet implemented!\n");
-            break;
-        }
+    case ValueID::ValueType_Button: break;
+    case ValueID::ValueType_Raw: break;
     }
     return value;
 }
@@ -949,17 +930,8 @@ VALUE rb_value_set_value(VALUE self, VALUE val)
             break;
         }
 
-    case ValueID::ValueType_List:
-        {
-            printf("List values not yet implemented!\n");
-            break;
-        }
-
-    case ValueID::ValueType_Schedule:
-        {
-            printf("Schedule values not yet implemented!\n");
-            break;
-        }
+    case ValueID::ValueType_List: break;
+    case ValueID::ValueType_Schedule: break;
 
     case ValueID::ValueType_Short:
         {
@@ -973,17 +945,8 @@ VALUE rb_value_set_value(VALUE self, VALUE val)
             Manager::Get()->SetValue(id, val_str);
             break;
         }
-    case ValueID::ValueType_Button:
-        {
-            printf("Button values not yet implemented!\n");
-            break;
-        }
-
-    case ValueID::ValueType_Raw:
-        {
-            printf("Raw values not yet implemented!\n");
-            break;
-        }
+    case ValueID::ValueType_Button: break;
+    case ValueID::ValueType_Raw: break;
     }
 
     return Qnil;
