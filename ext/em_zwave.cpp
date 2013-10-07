@@ -808,6 +808,97 @@ VALUE rb_value_get_type(VALUE self)
 }
 
 extern "C"
+VALUE rb_value_get_command_class(VALUE self)
+{
+    uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
+    uint32 id1 = (uint32)(long_id & 0xFFFFFFFF);
+    uint8 command_class_id = (uint8)((id1 & 0x003fc000) >> 14);
+    VALUE command_class_sym;
+    switch(command_class_id) {
+    case COMMAND_CLASS_MAR: return ID2SYM(rb_intern("mar"));
+    case COMMAND_CLASS_BASIC: return ID2SYM(rb_intern("basic"));
+    case COMMAND_CLASS_VERSION: return ID2SYM(rb_intern("version"));
+    case COMMAND_CLASS_BATTERY: return ID2SYM(rb_intern("battery"));
+    case COMMAND_CLASS_WAKE_UP: return ID2SYM(rb_intern("wake_up"));
+    case COMMAND_CLASS_CONTROLLER_REPLICATION: return ID2SYM(rb_intern("controller_replication"));
+    case COMMAND_CLASS_SWITCH_MULTILEVEL: return ID2SYM(rb_intern("switch_multilevel"));
+    case COMMAND_CLASS_SWITCH_ALL: return ID2SYM(rb_intern("switch_all"));
+    case COMMAND_CLASS_SENSOR_BINARY: return ID2SYM(rb_intern("sensor_binary"));
+    case COMMAND_CLASS_SENSOR_MULTILEVEL: return ID2SYM(rb_intern("sensor_multilevel"));
+    case COMMAND_CLASS_SENSOR_ALARM: return ID2SYM(rb_intern("sensor_alarm"));
+    case COMMAND_CLASS_ALARM: return ID2SYM(rb_intern("alarm"));
+    case COMMAND_CLASS_MULTI_CMD: return ID2SYM(rb_intern("multi_cmd"));
+    case COMMAND_CLASS_CLIMATE_CONTROL_SCHEDULE: return ID2SYM(rb_intern("climate_control_schedule"));
+    case COMMAND_CLASS_CLOCK: return ID2SYM(rb_intern("clock"));
+    case COMMAND_CLASS_ASSOCIATION: return ID2SYM(rb_intern("association"));
+    case COMMAND_CLASS_CONFIGURATION: return ID2SYM(rb_intern("configuration"));
+    case COMMAND_CLASS_MANUFACTURER_SPECIFIC: return ID2SYM(rb_intern("manufacturer_specific"));
+    case COMMAND_CLASS_APPLICATION_STATUS: return ID2SYM(rb_intern("application_status"));
+    case COMMAND_CLASS_ASSOCIATION_COMMAND_CONFIGURATION: return ID2SYM(rb_intern("association_command_configuration"));
+    case COMMAND_CLASS_AV_CONTENT_DIRECTORY_MD: return ID2SYM(rb_intern("av_content_directory_md"));
+    case COMMAND_CLASS_AV_CONTENT_SEARCH_MD: return ID2SYM(rb_intern("av_content_search_md"));
+    case COMMAND_CLASS_AV_RENDERER_STATUS: return ID2SYM(rb_intern("av_renderer_status"));
+    case COMMAND_CLASS_AV_TAGGING_MD: return ID2SYM(rb_intern("av_tagging_md"));
+    case COMMAND_CLASS_BASIC_WINDOW_COVERING: return ID2SYM(rb_intern("basic_window_covering"));
+    case COMMAND_CLASS_CHIMNEY_FAN: return ID2SYM(rb_intern("chimney_fan"));
+    case COMMAND_CLASS_COMPOSITE: return ID2SYM(rb_intern("composite"));
+    case COMMAND_CLASS_DOOR_LOCK: return ID2SYM(rb_intern("door_lock"));
+    case COMMAND_CLASS_ENERGY_PRODUCTION: return ID2SYM(rb_intern("energy_production"));
+    case COMMAND_CLASS_FIRMWARE_UPDATE_MD: return ID2SYM(rb_intern("firmware_update_md"));
+    case COMMAND_CLASS_GEOGRAPHIC_LOCATION: return ID2SYM(rb_intern("geographic_location"));
+    case COMMAND_CLASS_GROUPING_NAME: return ID2SYM(rb_intern("grouping_name"));
+    case COMMAND_CLASS_HAIL: return ID2SYM(rb_intern("hail"));
+    case COMMAND_CLASS_INDICATOR: return ID2SYM(rb_intern("indicator"));
+    case COMMAND_CLASS_IP_CONFIGURATION: return ID2SYM(rb_intern("ip_configuration"));
+    case COMMAND_CLASS_LANGUAGE: return ID2SYM(rb_intern("language"));
+    case COMMAND_CLASS_LOCK: return ID2SYM(rb_intern("lock"));
+    case COMMAND_CLASS_MANUFACTURER_PROPRIETARY: return ID2SYM(rb_intern("manufacturer_proprietary"));
+    case COMMAND_CLASS_METER_PULSE: return ID2SYM(rb_intern("meter_pulse"));
+    case COMMAND_CLASS_METER: return ID2SYM(rb_intern("meter"));
+    case COMMAND_CLASS_MTP_WINDOW_COVERING: return ID2SYM(rb_intern("mtp_window_covering"));
+    case COMMAND_CLASS_MULTI_INSTANCE_ASSOCIATION: return ID2SYM(rb_intern("multi_instance_association"));
+    case COMMAND_CLASS_MULTI_INSTANCE: return ID2SYM(rb_intern("multi_instance"));
+    case COMMAND_CLASS_NO_OPERATION: return ID2SYM(rb_intern("no_operation"));
+    case COMMAND_CLASS_NODE_NAMING: return ID2SYM(rb_intern("node_naming"));
+    case COMMAND_CLASS_NON_INTEROPERABLE: return ID2SYM(rb_intern("non_interoperable"));
+    case COMMAND_CLASS_POWERLEVEL: return ID2SYM(rb_intern("powerlevel"));
+    case COMMAND_CLASS_PROPRIETARY: return ID2SYM(rb_intern("proprietary"));
+    case COMMAND_CLASS_PROTECTION: return ID2SYM(rb_intern("protection"));
+    case COMMAND_CLASS_REMOTE_ASSOCIATION_ACTIVATE: return ID2SYM(rb_intern("remote_association_activate"));
+    case COMMAND_CLASS_REMOTE_ASSOCIATION: return ID2SYM(rb_intern("remote_association"));
+    case COMMAND_CLASS_SCENE_ACTIVATION: return ID2SYM(rb_intern("scene_activation"));
+    case COMMAND_CLASS_SCENE_ACTUATOR_CONF: return ID2SYM(rb_intern("scene_actuator_conf"));
+    case COMMAND_CLASS_SCENE_CONTROLLER_CONF: return ID2SYM(rb_intern("scene_controller_conf"));
+    case COMMAND_CLASS_SCREEN_ATTRIBUTES: return ID2SYM(rb_intern("screen_attributes"));
+    case COMMAND_CLASS_SCREEN_MD: return ID2SYM(rb_intern("screen_md"));
+    case COMMAND_CLASS_SECURITY: return ID2SYM(rb_intern("security"));
+    case COMMAND_CLASS_SENSOR_CONFIGURATION: return ID2SYM(rb_intern("sensor_configuration"));
+    case COMMAND_CLASS_SILENCE_ALARM: return ID2SYM(rb_intern("silence_alarm"));
+    case COMMAND_CLASS_SIMPLE_AV_CONTROL: return ID2SYM(rb_intern("simple_av_control"));
+    case COMMAND_CLASS_SWITCH_BINARY: return ID2SYM(rb_intern("switch_binary"));
+    case COMMAND_CLASS_SWITCH_TOGGLE_BINARY: return ID2SYM(rb_intern("switch_toggle_binary"));
+    case COMMAND_CLASS_SWITCH_TOGGLE_MULTILEVEL: return ID2SYM(rb_intern("switch_toggle_multilevel"));
+    case COMMAND_CLASS_THERMOSTAT_FAN_MODE: return ID2SYM(rb_intern("thermostat_fan_mode"));
+    case COMMAND_CLASS_THERMOSTAT_FAN_STATE: return ID2SYM(rb_intern("thermostat_fan_state"));
+    case COMMAND_CLASS_THERMOSTAT_HEATING: return ID2SYM(rb_intern("thermostat_heating"));
+    case COMMAND_CLASS_THERMOSTAT_MODE: return ID2SYM(rb_intern("thermostat_mode"));
+    case COMMAND_CLASS_THERMOSTAT_OPERATING_STATE: return ID2SYM(rb_intern("thermostat_operating_state"));
+    case COMMAND_CLASS_THERMOSTAT_SETBACK: return ID2SYM(rb_intern("thermostat_setback"));
+    case COMMAND_CLASS_THERMOSTAT_SETPOINT: return ID2SYM(rb_intern("thermostat_setpoint"));
+    case COMMAND_CLASS_TIME_PARAMETERS: return ID2SYM(rb_intern("time_parameters"));
+    case COMMAND_CLASS_TIME: return ID2SYM(rb_intern("time"));
+    case COMMAND_CLASS_USER_CODE: return ID2SYM(rb_intern("user_code"));
+    case COMMAND_CLASS_ZIP_ADV_CLIENT: return ID2SYM(rb_intern("zip_adv_client"));
+    case COMMAND_CLASS_ZIP_ADV_SERVER: return ID2SYM(rb_intern("zip_adv_server"));
+    case COMMAND_CLASS_ZIP_ADV_SERVICES: return ID2SYM(rb_intern("zip_adv_services"));
+    case COMMAND_CLASS_ZIP_CLIENT: return ID2SYM(rb_intern("zip_client"));
+    case COMMAND_CLASS_ZIP_SERVER: return ID2SYM(rb_intern("zip_server"));
+    case COMMAND_CLASS_ZIP_SERVICES: return ID2SYM(rb_intern("zip_services"));
+    default: return INT2FIX(command_class_id);
+    }
+}
+
+extern "C"
 VALUE rb_value_get_value(VALUE self)
 {
     uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
@@ -994,6 +1085,7 @@ void Init_emzwave() {
     rb_define_method(rb_cValue, "instance", (VALUE (*)(...))rb_value_get_instance, 0);
     rb_define_method(rb_cValue, "index", (VALUE (*)(...))rb_value_get_index, 0);
     rb_define_method(rb_cValue, "type", (VALUE (*)(...))rb_value_get_type, 0);
+    rb_define_method(rb_cValue, "command_class", (VALUE (*)(...))rb_value_get_command_class, 0);
 
     rb_cNotification = rb_define_class_under(rb_cZwave, "Notification", rb_cObject);
 }

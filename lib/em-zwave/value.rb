@@ -21,6 +21,7 @@ module EventMachine
       def instance; end
       def index; end
       def type; end
+      def command_class; end
 
       def label; end
       def units; end
@@ -36,7 +37,7 @@ module EventMachine
       def get; end
 
       def inspect
-        ret = "Value[label=#{label},value=#{get},min=#{min},max=#{max}"
+        ret = "Value[label=#{label},command_class=#{command_class},value=#{get},min=#{min},max=#{max}"
         ret << ",units=#{units}" unless units == ""
         ret << "]"
         ret
