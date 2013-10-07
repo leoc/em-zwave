@@ -593,16 +593,6 @@ VALUE rb_node_off(VALUE self)
 }
 
 extern "C"
-VALUE rb_node_set_level(VALUE self, VALUE level)
-{
-    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
-    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
-    uint8 value = (uint8)FIX2UINT(level);
-    Manager::Get()->SetNodeLevel(home_id, node_id, value);
-    return Qnil;
-}
-
-extern "C"
 VALUE rb_value_get_label(VALUE self)
 {
     uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
@@ -987,7 +977,6 @@ void Init_emzwave() {
     rb_define_method(rb_cNode, "product_id", (VALUE (*)(...))rb_node_get_product_id, 0);
     rb_define_method(rb_cNode, "name", (VALUE (*)(...))rb_node_get_name, 0);
     rb_define_method(rb_cNode, "location", (VALUE (*)(...))rb_node_get_location, 0);
-    rb_define_method(rb_cNode, "level=", (VALUE (*)(...))rb_node_set_level, 1);
 
     rb_cValue = rb_define_class_under(rb_cZwave, "Value", rb_cObject);
     rb_define_method(rb_cValue, "label", (VALUE (*)(...))rb_value_get_label, 0);
