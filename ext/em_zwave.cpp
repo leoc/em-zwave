@@ -813,7 +813,6 @@ VALUE rb_value_get_command_class(VALUE self)
     uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
     uint32 id1 = (uint32)(long_id & 0xFFFFFFFF);
     uint8 command_class_id = (uint8)((id1 & 0x003fc000) >> 14);
-    VALUE command_class_sym;
     switch(command_class_id) {
     case COMMAND_CLASS_MAR: return ID2SYM(rb_intern("mar"));
     case COMMAND_CLASS_BASIC: return ID2SYM(rb_intern("basic"));
