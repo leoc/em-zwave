@@ -2,6 +2,8 @@ module EventMachine
   class Zwave
     class Value
 
+      attr_reader :home_id, :value_id
+
       def initialize(home_id, value_id)
         @home_id = home_id
         @value_id = value_id
