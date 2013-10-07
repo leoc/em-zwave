@@ -804,7 +804,19 @@ VALUE rb_value_get_type(VALUE self)
     uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
     uint32 id1 = (uint32)(long_id & 0xFFFFFFFF);
     ValueID::ValueType type = (ValueID::ValueType)(id1 & 0x0000000f);
-    return INT2FIX(type);
+    switch(type) {
+    case ValueID::ValueType_Bool: return ID2SYM(rb_intern("bool"));
+    case ValueID::ValueType_Byte: return ID2SYM(rb_intern("byte"));
+    case ValueID::ValueType_Decimal: return ID2SYM(rb_intern("decimal"));
+    case ValueID::ValueType_Int: return ID2SYM(rb_intern("int"));
+    case ValueID::ValueType_List: return ID2SYM(rb_intern("list"));
+    case ValueID::ValueType_Schedule: return ID2SYM(rb_intern("schedule"));
+    case ValueID::ValueType_Short: return ID2SYM(rb_intern("short"));
+    case ValueID::ValueType_String: return ID2SYM(rb_intern("string"));
+    case ValueID::ValueType_Button: return ID2SYM(rb_intern("button"));
+    case ValueID::ValueType_Raw: return ID2SYM(rb_intern("raw"));
+    default: return INT2FIX(type);
+    };
 }
 
 extern "C"
