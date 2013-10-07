@@ -42,6 +42,10 @@ module EventMachine
       def off!; end
       def level=; end
 
+      def inspect
+        "Node[id=#{node_id},home_id=#{home_id},product_name=#{product_name},manufacturer=#{manufacturer_name}]"
+      end
+
     end
   end
 end
