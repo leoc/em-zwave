@@ -575,24 +575,6 @@ VALUE rb_node_get_location(VALUE self)
 }
 
 extern "C"
-VALUE rb_node_on(VALUE self)
-{
-    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
-    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
-    Manager::Get()->SetNodeOn(home_id, node_id);
-    return Qnil;
-}
-
-extern "C"
-VALUE rb_node_off(VALUE self)
-{
-    uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
-    uint8 node_id = FIX2UINT(rb_iv_get(self, "@node_id"));
-    Manager::Get()->SetNodeOff(home_id, node_id);
-    return Qnil;
-}
-
-extern "C"
 VALUE rb_value_get_label(VALUE self)
 {
     uint32 home_id = FIX2UINT(rb_iv_get(self, "@home_id"));
@@ -1075,8 +1057,6 @@ void Init_emzwave() {
 
     rb_cNode  = rb_define_class_under(rb_cZwave, "Node", rb_cObject);
     rb_define_method(rb_cNode, "type", (VALUE (*)(...))rb_node_type, 0);
-    rb_define_method(rb_cNode, "on!", (VALUE (*)(...))rb_node_on, 0);
-    rb_define_method(rb_cNode, "off!", (VALUE (*)(...))rb_node_off, 0);
     rb_define_method(rb_cNode, "listening_device?", (VALUE (*)(...))rb_node_is_listening_device, 0);
     rb_define_method(rb_cNode, "frequent_listening_device?", (VALUE (*)(...))rb_node_is_frequent_listening_device, 0);
     rb_define_method(rb_cNode, "beaming_device?", (VALUE (*)(...))rb_node_is_beaming_device, 0);

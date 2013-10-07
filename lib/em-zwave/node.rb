@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 module EventMachine
   class Zwave
     class Node
@@ -38,12 +39,25 @@ module EventMachine
       def name; end
       def location; end
 
-      def on!; end
-      def off!; end
+      def on!
+        values.each do |value|
+          if [:switch_multilevel,:switch_binary].include?(value.command_class)
+            value.set(255)
+          end
+        end
+      end
+
+      def off!
+        values.each do |value|
+          if [:switch_multilevel,:switch_binary].include?(value.command_class)
+            value.set(0)
+          end
+        end
+      end
 
       def level=(level)
         values.each do |value|
-          if value.label == "Level"
+          if value.command_class == :switch_multilevel
             value.set(level)
           end
         end
