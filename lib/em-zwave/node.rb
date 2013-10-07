@@ -40,7 +40,14 @@ module EventMachine
 
       def on!; end
       def off!; end
-      def level=; end
+
+      def level=(level)
+        values.each do |value|
+          if value.label == "Level"
+            value.set(level)
+          end
+        end
+      end
 
       def inspect
         "Node[id=#{node_id},home_id=#{home_id},product_name=#{product_name},manufacturer=#{manufacturer_name}]"
