@@ -27,7 +27,7 @@ EM.run do
   end
 
   @zwave.on(:value_changed) do |value|
-    puts value.inspect
+    puts "Value Changed: #{value.inspect}"
   end
 
   @zwave.on_shutdown do
