@@ -820,6 +820,22 @@ VALUE rb_value_get_type(VALUE self)
 }
 
 extern "C"
+VALUE rb_value_get_genre(VALUE self)
+{
+    uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
+    uint32 id1 = (uint32)(long_id & 0xFFFFFFFF);
+    ValueID::ValueGenre genre = (ValueID::ValueGenre)((id1 & 0x00c00000) >> 22);
+    switch(genre) {
+    case ValueID::ValueGenre_Basic: return ID2SYM(rb_intern("basic"));
+    case ValueID::ValueGenre_User: return ID2SYM(rb_intern("user"));
+    case ValueID::ValueGenre_Config: return ID2SYM(rb_intern("config"));
+    case ValueID::ValueGenre_System: return ID2SYM(rb_intern("system"));
+    case ValueID::ValueGenre_Count: return ID2SYM(rb_intern("count"));
+    default: return INT2FIX(genre);
+    };
+}
+
+extern "C"
 VALUE rb_value_get_command_class(VALUE self)
 {
     uint64 long_id = (uint64)FIX2LONG(rb_iv_get(self, "@value_id"));
@@ -1096,6 +1112,7 @@ void Init_emzwave() {
     rb_define_method(rb_cValue, "instance", (VALUE (*)(...))rb_value_get_instance, 0);
     rb_define_method(rb_cValue, "index", (VALUE (*)(...))rb_value_get_index, 0);
     rb_define_method(rb_cValue, "type", (VALUE (*)(...))rb_value_get_type, 0);
+    rb_define_method(rb_cValue, "genre", (VALUE (*)(...))rb_value_get_genre, 0);
     rb_define_method(rb_cValue, "command_class", (VALUE (*)(...))rb_value_get_command_class, 0);
 
     rb_cNotification = rb_define_class_under(rb_cZwave, "Notification", rb_cObject);

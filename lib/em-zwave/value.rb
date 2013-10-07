@@ -21,6 +21,7 @@ module EventMachine
       def instance; end
       def index; end
       def type; end
+      def genre; end
       def command_class; end
 
       def label; end
@@ -38,6 +39,7 @@ module EventMachine
 
       def inspect
         ret = "Value[label=#{label}"
+        ret << ",genre=#{genre.inspect}"
         ret << ",command_class=#{command_class.inspect}"
         ret << ",type=#{type.inspect}"
         ret << ",value=#{get.inspect}"
