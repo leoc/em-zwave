@@ -33,7 +33,7 @@ module EventMachine
       def set?; end
       def polled?; end
 
-      def set(level); end
+      def set(value); end
       def get; end
 
       def inspect
