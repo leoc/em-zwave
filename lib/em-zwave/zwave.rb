@@ -54,7 +54,6 @@ module EventMachine
       when :node_removed
         nodes.delete(notification.node_id)
       when :value_added
-        puts notification.node_id
         node = nodes[notification.node_id]
         if node
           value = Value.new(notification.home_id, notification.value_id)
