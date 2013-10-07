@@ -2,6 +2,8 @@ module EventMachine
   class Zwave
     class Node
 
+      attr_accessor :home_id, :node_id
+
       def initialize(home_id, node_id)
         @home_id = home_id
         @node_id = node_id
