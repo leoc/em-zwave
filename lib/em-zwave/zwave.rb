@@ -25,6 +25,17 @@ module EventMachine
       end
     end
 
+    def nodes
+      @nodes ||= {}
+    end
+
+    def find_value(node_id, value_id)
+      node = nodes[node_id]
+      if node
+        node.values.select { |val| val.value_id == value_id }.first
+      end
+    end
+
     def add_device(device)
       @devices << device unless @devices.include?(device)
     end
@@ -35,6 +46,36 @@ module EventMachine
     end
 
     def notification_received(notification)
+      case notification.type
+      when :node_added
+        node = Node.new(notification.home_id, notification.node_id)
+        nodes[notification.node_id] = node
+        notification.node = node
+      when :node_removed
+        nodes.delete(notification.node_id)
+      when :value_added
+        puts notification.node_id
+        node = nodes[notification.node_id]
+        if node
+          value = Value.new(notification.home_id, notification.value_id)
+          node.values << value
+          notification.value = value
+          notification.node  = node
+        end
+      when :value_removed
+        node = nodes[notification.node_id]
+        if node
+          node.values.delete_if do |val|
+            val.value_id == notification.value_id
+          end
+        end
+      when :awake_nodes_queried, :all_nodes_queried_some_dead, :all_nodes_queried
+        invoke_initialization_callbacks
+      else
+        notification.node = nodes[notification.node_id]
+        notification.value = find_value(notification.node_id, notification.value_id)
+      end
+
       callbacks.each do |cb|
         cb.call(notification)
       end
