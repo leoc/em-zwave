@@ -37,7 +37,11 @@ module EventMachine
       def get; end
 
       def inspect
-        ret = "Value[label=#{label},command_class=#{command_class},value=#{get},min=#{min},max=#{max}"
+        ret = "Value[label=#{label}"
+        ret << ",command_class=#{command_class.inspect}"
+        ret << ",type=#{type.inspect}"
+        ret << ",value=#{get.inspect}"
+        ret << ",min=#{min.inspect},max=#{max.inspect}" unless min == max
         ret << ",units=#{units}" unless units == ""
         ret << "]"
         ret
